@@ -22,22 +22,12 @@ contract MintSwap404NFT is Ownable, ERC404 {
 
     mapping(address => uint256[]) public stakedAddressInfo;
 
-    event BaseUriUpdate(string uri);
-    event WebsiteUrlUpdate(string uri);
-    event ContractUriUpdate(string uri);
     event Set721TransferExempt(address txExempt);
     event TokensStaked(address indexed owner, uint256[] tokenIds);
 
 
     string private constant __NAME = "MintSwap404NFT";
     string private constant __SYM = "MST";
-
-    string private _websiteUri;
-
-    string public _baseUri;
-    string private _contractUri;
-
-    address private constant _uniswapV3Router = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
 
     constructor(
         address initialOwner_,
@@ -48,90 +38,12 @@ contract MintSwap404NFT is Ownable, ERC404 {
     {
         // Do not mint the ERC721s to the initial owner, as it's a waste of gas.
         _mintERC20(initialMintRecipient_, _maxTotalSupplyERC721 * units);
-        _baseUri = "ipfs://QmaZayMhEmhKKqDHoXHMMd1SMic5wpXvJWa2KeyfEz8RM7/";
-        _websiteUri = "https://PORTAL404.io";
-
-        _contractUri = string(
-            abi.encodePacked(
-                '{"name": "Portal-404","description": A collection of ',
-                _maxTotalSupplyERC721.toString(),
-                ' ERC-404 Tokens enhanced with ERC-5169 + TokenScript"","image": "ipfs://Qmf8Qi6oapx8sce1kPa6aiFUMzCpm869D1RpeGYinEwtgo"}'
-            )
-        );
 
         _publicSaleStartTime = block.timestamp;
     }
 
-    function contractURI() public view returns (string memory) {
-        return _contractUri;
-    }
-
-    function tokenURI(uint256 id) public view override returns (string memory) {
-        uint8 seed = uint8(bytes1(keccak256(abi.encodePacked(id))));
-        string memory image;
-        string memory color;
-
-        if (seed <= 100) {
-            image = "blue.gif";
-            color = "Blue";
-        } else if (seed <= 150) {
-            image = "green.gif";
-            color = "Green";
-        } else if (seed <= 200) {
-            image = "yellow.gif";
-            color = "Yellow";
-        } else if (seed <= 230) {
-            image = "indigo.gif";
-            color = "Indigo";
-        } else if (seed <= 248) {
-            image = "red.gif";
-            color = "Red";
-        } else {
-            image = "obsidian.gif";
-            color = "Obsidian";
-        }
-
-        return
-            string(
-                abi.encodePacked(
-                    '{"name": "Portal-404 #',
-                    id.toString(),
-                    '","description":"A collection of ',
-                    _maxTotalSupplyERC721.toString(),
-                    " ERC-404 Tokens enhanced with ERC-5169 & TokenScript",
-                    '","external_url":"',
-                    _websiteUri,
-                    '","image":"',
-                    _baseUri,
-                    image,
-                    '","attributes":[{"trait_type":"Color","value":"',
-                    color,
-                    '"}]}'
-                )
-            );
-    }
-
-    function setWebsiteUrl(string memory newUri) public onlyOwner {
-        _websiteUri = newUri;
-        emit WebsiteUrlUpdate(newUri);
-    }
-
-    function setBaseURI(string memory newUri) public onlyOwner {
-        _baseUri = newUri;
-        emit BaseUriUpdate(newUri);
-    }
-
-    function setContractURI(string memory newUri) public onlyOwner {
-        _contractUri = newUri;
-        emit ContractUriUpdate(newUri);
-    }
-
-    // Supply ERC5159 and ERC404 type
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view override(ERC5169, ERC404) returns (bool) {
-        return
-            ERC404.supportsInterface(interfaceId);
+    function tokenURI(uint256 id_) public pure override returns (string memory) {
+        return string.concat("https://example.com/token/", Strings.toString(id_));
     }
 
     function mint(uint numberOfTokens) public payable {
