@@ -1,12 +1,12 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {IERC721Receiver} from "@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
-import {IERC165} from "@openzeppelin/contracts/interfaces/IERC165.sol";
-import {IERC404} from "IERC404.sol";
-import {DoubleEndedQueue} from "./lib/DoubleEndedQueue.sol";
-import {ERC721Events} from "./lib/ERC721Events.sol";
-import {ERC20Events} from "./lib/ERC20Events.sol";
+import "@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
+import "@openzeppelin/contracts/interfaces/IERC165.sol";
+import "IERC404.sol";
+import "./lib/DoubleEndedQueue.sol";
+import "./lib/ERC721Events.sol";
+import "./lib/ERC20Events.sol";
 
 abstract contract ERC404 is IERC404 {
     using DoubleEndedQueue for DoubleEndedQueue.Uint256Deque;
@@ -438,11 +438,6 @@ abstract contract ERC404 is IERC404 {
         return
             interfaceId == type(IERC404).interfaceId ||
             interfaceId == type(IERC165).interfaceId;
-    }
-
-    /// @notice Function for self-exemption
-    function setSelfERC721TransferExempt(bool state_) public virtual {
-        _setERC721TransferExempt(msg.sender, state_);
     }
 
     /// @notice Function to check if address is transfer exempt

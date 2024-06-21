@@ -1,30 +1,26 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
-import {ERC404} from "ERC404.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+import "ERC404.sol";
 
 contract MintSwap404NFT is Ownable, ERC404 {
     using Strings for uint256;
     uint8 constant _decimals = 18;
     uint256 _maxTotalSupplyERC721 = 10000;
 
-    uint256 public constant PUBLIC_SALE_PRICE = 40000000000000000; //0.04 ETH
+    uint256 public constant PUBLIC_SALE_PRICE = 0.04 ether; //0.04 ETH
 
     uint256 public constant PUBLIC_SALE_COUNT = 3000; //public sale count
 
     uint256 public _publicMintedCount = 0;
 
-    uint256 public constant PUBLIC_SALE_TIME = 43200 minutes;// public sale time 30 days
-
     uint256 public _publicSaleStartTime;// public sale start time
 
-    mapping(address => uint256[]) public stakedAddressInfo;
+    uint256 public _publicSaleEndTime;// public sale end time
 
-    event Set721TransferExempt(address txExempt);
-    event TokensStaked(address indexed owner, uint256[] tokenIds);
-
+    event Set721TransferExempt(address exemptAddress);
 
     string private constant __NAME = "MintSwap404NFT";
     string private constant __SYM = "MST";
@@ -37,9 +33,8 @@ contract MintSwap404NFT is Ownable, ERC404 {
         Ownable(initialOwner_)
     {
         // Do not mint the ERC721s to the initial owner, as it's a waste of gas.
-        _mintERC20(initialMintRecipient_, _maxTotalSupplyERC721 * units);
-
-        _publicSaleStartTime = block.timestamp;
+        // _mintERC20(initialMintRecipient_, _maxTotalSupplyERC721 * units);
+        // _publicSaleStartTime = block.timestamp;
     }
 
     function tokenURI(uint256 id_) public pure override returns (string memory) {
@@ -48,8 +43,10 @@ contract MintSwap404NFT is Ownable, ERC404 {
 
     function mint(uint numberOfTokens) public payable {
         uint256 _saleStartTime = uint256(_publicSaleStartTime);
+        uint256 _saleEndTime = uint256(_publicSaleEndTime);
+
         require(_saleStartTime != 0 && block.timestamp >= _saleStartTime, "public sale has not started yet");
-        require(block.timestamp - _saleStartTime <= PUBLIC_SALE_TIME, "public sale has ended");
+        require(block.timestamp <= _saleEndTime, "public sale has ended");
         require(_publicMintedCount.add(numberOfTokens) <= PuPUBLIC_SALE_COUNT, "public sale has ended");
         require(PUBLIC_SALE_PRICE.mul(numberOfTokens) <= msg.value, "Ether value sent is not correct");
 
@@ -61,19 +58,18 @@ contract MintSwap404NFT is Ownable, ERC404 {
     }
 
     // _publicSaleStartTime setter，onlyOwner
-    function setPublicSaleStartTime(uint32 timestamp) external onlyOwner {
-        _publicSaleStartTime = timestamp;
+    function setPublicSaleStartAndEndTime(uint32 statTime, uint32 endTime) external onlyOwner {
+        _publicSaleStartTime = statTime;
+        _publicSaleEndTime = endTime;
     }
 
-    function stake(uint256[] calldata tokenIds) external {
-        require(tokenIds.length > 0, "MP: Staking zero tokens");
-        address sender = _msgSender();
-        for (uint256 i = 0; i < tokenIds.length; ) {
-            transferFrom(sender, address(this), tokenIds[i]);
-            unchecked {
-                ++i;
-            }
-        }
-        emit TokensStaked(owner, tokenIds);
+    function setSelfERC721TransferExempt(address exemptAddress) external onlyOwner {
+        // _setERC721TransferExempt(exemptAddress, true);
+        _erc721TransferExempt[target_] = true;
     }
+
+    function mintERC20ForExempt(address exemptAddress, uint256 amount) external onlyOwner {
+        _mintERC20(exemptAddress, amount);
+    }
+
 }
