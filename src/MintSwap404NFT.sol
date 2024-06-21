@@ -143,7 +143,7 @@ contract MintSwap404NFT is Ownable, ERC404 {
 
         address sender = _msgSender();
         for (uint256 i; i < numberOfTokens; i++) {
-            _mintERC20(sender, units);
+            transfer(sender, units);
         }
         _publicMintedCount += numberOfTokens;
     }
