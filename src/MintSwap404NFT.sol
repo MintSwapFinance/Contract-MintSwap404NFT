@@ -20,10 +20,14 @@ contract MintSwap404NFT is Ownable, ERC404 {
 
     uint256 public _publicSaleStartTime;// public sale start time
 
+    mapping(address => uint256[]) public stakedAddressInfo;
+
     event BaseUriUpdate(string uri);
     event WebsiteUrlUpdate(string uri);
     event ContractUriUpdate(string uri);
     event Set721TransferExempt(address txExempt);
+    event TokensStaked(address indexed owner, uint256[] tokenIds);
+
 
     string private constant __NAME = "MintSwap404NFT";
     string private constant __SYM = "MST";
@@ -137,13 +141,27 @@ contract MintSwap404NFT is Ownable, ERC404 {
         require(_publicMintedCount.add(numberOfTokens) <= PuPUBLIC_SALE_COUNT, "public sale has ended");
         require(PUBLIC_SALE_PRICE.mul(numberOfTokens) <= msg.value, "Ether value sent is not correct");
 
+        address sender = _msgSender();
         for (uint256 i; i < numberOfTokens; i++) {
-            _mintERC20(msg.sender, units);
+            _mintERC20(sender, units);
         }
+        _publicMintedCount += numberOfTokens;
     }
 
     // _publicSaleStartTime setter，onlyOwner
     function setPublicSaleStartTime(uint32 timestamp) external onlyOwner {
         _publicSaleStartTime = timestamp;
+    }
+
+    function stake(uint256[] calldata tokenIds) external {
+        require(tokenIds.length > 0, "MP: Staking zero tokens");
+        address sender = _msgSender();
+        for (uint256 i = 0; i < tokenIds.length; ) {
+            transferFrom(sender, address(this), tokenIds[i]);
+            unchecked {
+                ++i;
+            }
+        }
+        emit TokensStaked(owner, tokenIds);
     }
 }
