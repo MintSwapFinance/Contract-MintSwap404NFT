@@ -4,6 +4,7 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "ERC404.sol";
+import "IMetadataRenderer.sol";
 
 contract MintSwap404NFT is Ownable, ERC404 {
     using Strings for uint256;
@@ -36,9 +37,14 @@ contract MintSwap404NFT is Ownable, ERC404 {
         // _mintERC20(initialMintRecipient_, _maxTotalSupplyERC721 * units);
         // _publicSaleStartTime = block.timestamp;
     }
+    function tokenURI(
+        uint256 tokenId
+    ) public view override returns (string memory) {
+        return IMetadataRenderer(metadataRenderer).tokenURI(tokenId);
+    }
 
-    function tokenURI(uint256 id_) public pure override returns (string memory) {
-        return string.concat("https://example.com/token/", Strings.toString(id_));
+    function setMetadataRenderer(address _metadataRenderer) public onlyOwner {
+        metadataRenderer = _metadataRenderer;
     }
 
     function mint(uint numberOfTokens) public payable {
