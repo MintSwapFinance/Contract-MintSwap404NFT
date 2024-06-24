@@ -56,10 +56,12 @@ contract MintSwap404NFTBenefit {
 
     function withdrawStakeBenefits(uint256 benefit) external {
         mintSwap404NFT.transferFrom(MST_OWNER, msg.sender, benefit);
+        userLPBenefits[msg.sender] = 0;
     }
 
     function withdrawLPBenefits(uint256 benefit) external {
         mintSwap404NFT.transferFrom(MST_OWNER, msg.sender, benefit);
+        userTradeBenefits[msg.sender] = 0;
     }
 
     function withdrawTradeBenefits(uint256 benefit) external {
