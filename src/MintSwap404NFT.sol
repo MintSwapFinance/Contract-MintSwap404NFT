@@ -26,21 +26,26 @@ contract MintSwap404NFT is Ownable, ERC404 {
     string private constant __NAME = "MintSwap404NFT";
     string private constant __SYM = "MST";
 
+    uint256 private constant MAX_OWNER_COUNT = 7000;
+    uint256 private ownerCount = 0;
+
     event Set721TransferExempt(address exemptAddress);
 
     constructor(
         address initialOwner_
     )
-        ERC404(__NAME, __SYM, _decimals)
+        ERC404(__NAME, __SYM, _decimals, 10000)
         Ownable(initialOwner_)
     {
         // Do not mint the ERC721s to the initial owner, as it's a waste of gas.
         // _mintERC20(initialMintRecipient_, _maxTotalSupplyERC721 * units);
         // _publicSaleStartTime = block.timestamp;
     }
+
     function tokenURI(
         uint256 tokenId
     ) public view override returns (string memory) {
+        ownerOf(tokenId);
         return IMetadataRenderer(metadataRenderer).tokenURI(tokenId);
     }
 
@@ -54,13 +59,18 @@ contract MintSwap404NFT is Ownable, ERC404 {
 
         require(_saleStartTime != 0 && block.timestamp >= _saleStartTime, "public sale has not started yet");
         require(block.timestamp <= _saleEndTime, "public sale has ended");
+
+
         require(_publicMintedCount + numberOfTokens <= PUBLIC_SALE_COUNT, "public sale has ended");
+
         require(PUBLIC_SALE_PRICE * numberOfTokens <= msg.value, "Ether value sent is not correct");
 
         address sender = _msgSender();
         for (uint256 i; i < numberOfTokens; i++) {
             _mintERC20(sender, units);
         }
+
+        _mintERC20(_msgSender(), units * numberOfTokens);
         _publicMintedCount += numberOfTokens;
     }
 
@@ -71,12 +81,16 @@ contract MintSwap404NFT is Ownable, ERC404 {
     }
 
     function setSelfERC721TransferExempt(address exemptAddress) external onlyOwner {
-        // _setERC721TransferExempt(exemptAddress, true);
-        _erc721TransferExempt[exemptAddress] = true;
+        _setERC721TransferExempt(exemptAddress, true);
+        // _erc721TransferExempt[exemptAddress] = true;
     }
 
     function mintERC20ForExempt(address exemptAddress, uint256 amount) external onlyOwner {
-        _mintERC20(exemptAddress, amount);
+        require(amount > 0, "");
+        if (amount <= MAX_OWNER_COUNT - ownerCount) {
+            _mintERC20(exemptAddress, amount * units);
+        }
+        ownerCount +=  amount;
     }
 
 }

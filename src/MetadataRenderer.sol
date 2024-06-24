@@ -42,7 +42,7 @@ contract MetadataRenderer is IMetadataRenderer, Ownable {
                     '"name": "',
                     name,
                     " #",
-                    Strings.toString(tokenID),
+                    Strings.toString(tokenID),  // ID_ENCODING_PREFIX - tokenID
                     '",',
                     '"description": "',
                     description,

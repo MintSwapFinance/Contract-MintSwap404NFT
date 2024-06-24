@@ -13,6 +13,8 @@ contract MintSwap404NFTBenefit is Ownable {
 
     address public caller;
 
+    address public whale;
+
     event UpdatedLPBenefits(address indexed user, uint256 benefit);
 
     event WithdrawLPBenefits(address indexed user, uint256 benefit);
@@ -25,23 +27,21 @@ contract MintSwap404NFTBenefit is Ownable {
         return __NAME;
     }
 
+    // struct[] for循环
     function updatedUserBenefits(address user, uint256 benefit) external {
         require(msg.sender == caller, "Invalid sender");
-        uint256 userLPBenefit = userLPBenefits[user];
-        if (userLPBenefit == 0) {
-            userLPBenefits[user] = benefit;
-        } else {
-            userLPBenefits[user] = userLPBenefit + benefit;
-        }
+        userLPBenefits[user] =  userLPBenefits[user] + benefit;
         emit UpdatedLPBenefits(user, benefit);
     }
 
+    // 可重入
     function withdrawBenefits(uint256 benefit) external {
+        // require benefit > 10000
         address sender = msg.sender;
         uint256 userLPBenefit = userLPBenefits[sender];
-        require(userLPBenefit > 0 && userLPBenefit >= benefit, "");
-        mintSwap404NFT.transferFrom(address(this), sender, benefit);
-        userLPBenefits[sender] = 0;
+        require(userLPBenefit >= benefit, "");
+        userLPBenefits[sender] = userLPBenefit - benefit;
+        mintSwap404NFT.transferFrom(whale, sender, benefit);  // IERC404
         emit WithdrawLPBenefits(sender, benefit);
     }
 

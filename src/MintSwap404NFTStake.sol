@@ -33,13 +33,13 @@ contract MintSwap404NFTStake is Ownable {
     }
 
     function stake(uint256[] calldata tokenIds) external {
-        require(tokenIds.length > 0, "MP: Staking zero tokens");
+        require(tokenIds.length > 0, "Staking zero tokens");
         address sender = msg.sender;
 
         for (uint256 i = 0; i < tokenIds.length; ) {
-            require(mintSwap404NFT.ownerOf(tokenIds[i]) == sender,"Invalid sender");
+            require(mintSwap404NFT.ownerOf(tokenIds[i]) == sender,"Invalid sender");  // IERC404
             mintSwap404NFT.transferFrom(sender, address(this), tokenIds[i]);
-            // stakedAddressInfo[sender].push(tokenIds[i]);
+            stakedAddressInfo[sender].push(tokenIds[i]);
             unchecked {
                 ++i;
             }
@@ -48,12 +48,13 @@ contract MintSwap404NFTStake is Ownable {
     }
 
     function withdraw(uint256[] calldata tokenIds) external {
-        require(tokenIds.length > 0, "Withdraw zero tokens");
+        require(tokenIds.length > 0, "Withdrawing zero tokens");
         address sender = msg.sender;
 
         for (uint256 i = 0; i < tokenIds.length; ) {
-            require(mintSwap404NFT.ownerOf(tokenIds[i]) == address(this),"Invalid sender");
+            require(mintSwap404NFT.ownerOf(tokenIds[i]) == address(this),"Invalid sender");  // IERC404
             mintSwap404NFT.transferFrom(address(this), sender, tokenIds[i]);
+            // stakedAddressInfo pop 找开源
             unchecked {
                 ++i;
             }
@@ -61,24 +62,21 @@ contract MintSwap404NFTStake is Ownable {
         emit TokensWithdraw(sender, tokenIds);
     }
 
+    // struct[] for循环
     function updatedStakeBenefits(address user, uint256 benefit) external {
         require(msg.sender == caller, "Invalid sender");
-        uint256 userStakeBenefit = userStakeBenefits[user];
-        if (userStakeBenefit == 0) {
-            userStakeBenefits[user] = benefit;
-        } else {
-            userStakeBenefits[user] = userStakeBenefit + benefit;
-        }
+        userStakeBenefits[user] = userStakeBenefits[user] + benefit;
         emit UpdatedStakeBenefits(user, benefit);
     }
 
-    // send eth
+    // send eth 可重入
     function withdrawStakeBenefits(uint256 benefit) external {
+        // require benefit > 0.00001 Gwei
         address payable sender = payable(msg.sender);
         uint256 userStakeBenefit = userStakeBenefits[sender];
-        require(userStakeBenefit > 0 && benefit <= userStakeBenefit, "Current user have no benefit");
-        sender.transfer(benefit);
-        userStakeBenefits[sender] = 0;
+        require(benefit <= userStakeBenefit, "Current user have no benefit");
+        userStakeBenefits[sender] = userStakeBenefit - benefit;
+        sender.transfer(benefit);  // TransferHelper
         emit WithdrawStakeBenefits(sender, benefit);
     }
 
