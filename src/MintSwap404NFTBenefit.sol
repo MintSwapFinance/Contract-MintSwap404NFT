@@ -3,32 +3,78 @@ pragma solidity ^0.8.20;
 
 import "./MintSwap404NFT.sol";
 
-contract MintSwap404NFTBenefit is Ownable {
+contract MintSwap404NFTBenefit {
 
     string private constant __NAME = "MintSwap404NFTBenefit";
 
-    mapping(address => uint256) public userBenefits;
+    mapping(address => uint256) public userStakeBenefits;
+
+    mapping(address => uint256) public userLPBenefits;
+
+    mapping(address => uint256) public userTradeBenefits;
+
+    MintSwap404NFT public mintSwap404NFT;
+
+    address constant MST_OWNER = 0x4565646;
+
+    constructor(address nftContract) {
+        mintSwap404NFT  = MintSwap404NFT(nftContract);
+    }
 
     function name() public view virtual returns (string memory) {
         return __NAME;
     }
 
 
-    function updatedUserBenefits(address user, uint256 benefit) public onlyOwner {
-        uint256 userBenefit = userBenefits[user];
-        if (userBenefit == 0) {
-            userBenefits[user] = benefit;
+    function updatedUserStakeBenefits(address user, uint256 benefit) external {
+        uint256 userStakeBenefit = userStakeBenefits[user];
+        if (userStakeBenefit == 0) {
+            userStakeBenefits[user] = benefit;
         } else {
-            userBenefits[user] = userBenefit + benefit;
+            userStakeBenefits[user] = userStakeBenefit + benefit;
+        }
+    }
+
+    function updatedUserLPBenefits(address user, uint256 benefit) external {
+        uint256 userLPBenefit = userLPBenefits[user];
+        if (userLPBenefit == 0) {
+            userLPBenefits[user] = benefit;
+        } else {
+            userLPBenefits[user] = userLPBenefit + benefit;
+        }
+    }
+
+    function updatedUserTradeBenefits(address user, uint256 benefit) external {
+        uint256 userTradeBenefit = userTradeBenefits[user];
+        if (userTradeBenefit == 0) {
+            userTradeBenefits[user] = benefit;
+        } else {
+            userTradeBenefits[user] = userTradeBenefit + benefit;
         }
     }
 
 
-    function withdrawBenefits(uint256 benefit) external {
-
+    function withdrawStakeBenefits(uint256 benefit) external {
+        mintSwap404NFT.transferFrom(MST_OWNER, msg.sender, benefit);
     }
 
-    function queryUserBenefits(address user) public view returns (uint256 benefit) {
-        return userBenefits[user];
+    function withdrawLPBenefits(uint256 benefit) external {
+        mintSwap404NFT.transferFrom(MST_OWNER, msg.sender, benefit);
+    }
+
+    function withdrawTradeBenefits(uint256 benefit) external {
+        // eth
+    }
+
+    function queryUserStakeBenefits(address user) public view returns (uint256 benefit) {
+        return userStakeBenefits[user];
+    }
+
+    function queryUserLPBenefits(address user) public view returns (uint256 benefit) {
+        return userLPBenefits[user];
+    }
+
+    function queryUserTradeBenefits(address user) public view returns (uint256 benefit) {
+        return userTradeBenefits[user];
     }
 }

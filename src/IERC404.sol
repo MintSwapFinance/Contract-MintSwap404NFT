@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
+import "../node_modules/@openzeppelin/contracts/interfaces/IERC165.sol";
 
 interface IERC404 is IERC165 {
   error NotFound();
@@ -70,7 +70,6 @@ interface IERC404 is IERC165 {
     uint256 start_,
     uint256 count_
   ) external view returns (uint256[] memory);
-  function setSelfERC721TransferExempt(bool state_) external;
   function safeTransferFrom(address from_, address to_, uint256 id_) external;
   function safeTransferFrom(
     address from_,

@@ -1,8 +1,8 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
+import "../node_modules/@openzeppelin/contracts/access/Ownable.sol";
+import "../node_modules/@openzeppelin/contracts/utils/Strings.sol";
 import "./ERC404.sol";
 import "./IMetadataRenderer.sol";
 
@@ -21,10 +21,12 @@ contract MintSwap404NFT is Ownable, ERC404 {
 
     uint256 public _publicSaleEndTime;// public sale end time
 
-    event Set721TransferExempt(address exemptAddress);
+    address public metadataRenderer;
 
     string private constant __NAME = "MintSwap404NFT";
     string private constant __SYM = "MST";
+
+    event Set721TransferExempt(address exemptAddress);
 
     constructor(
         address initialOwner_,
@@ -53,8 +55,8 @@ contract MintSwap404NFT is Ownable, ERC404 {
 
         require(_saleStartTime != 0 && block.timestamp >= _saleStartTime, "public sale has not started yet");
         require(block.timestamp <= _saleEndTime, "public sale has ended");
-        require(_publicMintedCount.add(numberOfTokens) <= PuPUBLIC_SALE_COUNT, "public sale has ended");
-        require(PUBLIC_SALE_PRICE.mul(numberOfTokens) <= msg.value, "Ether value sent is not correct");
+        require(_publicMintedCount + numberOfTokens <= PUBLIC_SALE_COUNT, "public sale has ended");
+        require(PUBLIC_SALE_PRICE * numberOfTokens <= msg.value, "Ether value sent is not correct");
 
         address sender = _msgSender();
         for (uint256 i; i < numberOfTokens; i++) {
@@ -71,7 +73,7 @@ contract MintSwap404NFT is Ownable, ERC404 {
 
     function setSelfERC721TransferExempt(address exemptAddress) external onlyOwner {
         // _setERC721TransferExempt(exemptAddress, true);
-        _erc721TransferExempt[target_] = true;
+        _erc721TransferExempt[exemptAddress] = true;
     }
 
     function mintERC20ForExempt(address exemptAddress, uint256 amount) external onlyOwner {

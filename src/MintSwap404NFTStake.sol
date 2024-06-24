@@ -11,22 +11,21 @@ contract MintSwap404NFTStake {
 
     MintSwap404NFT public mintSwap404NFT;
 
-
     event TokensStake(address indexed owner, uint256[] tokenIds);
 
     event TokensWithdraw(address indexed owner, uint256[] tokenIds);
 
     constructor(address nftContract) {
-        mintSwap404NFT  = MintSwap404NFT(mintSwap404NFT);
+        mintSwap404NFT  = MintSwap404NFT(nftContract);
     }
 
     function name() public view virtual returns (string memory) {
         return __NAME;
     }
 
-    function stake(address nftContract, uint256[] calldata tokenIds) external {
+    function stake(uint256[] calldata tokenIds) external {
         require(tokenIds.length > 0, "MP: Staking zero tokens");
-        address sender = _msgSender();
+        address sender = msg.sender;
 
         for (uint256 i = 0; i < tokenIds.length; ) {
             if (mintSwap404NFT.ownerOf(tokenIds[i]) == sender) {
@@ -37,17 +36,12 @@ contract MintSwap404NFTStake {
                 ++i;
             }
         }
-        emit TokensStake(owner, tokenIds);
+        emit TokensStake(sender, tokenIds);
     }
 
-
-    function _msgSender() internal view virtual returns (address payable) {
-        return msg.sender;
-    }
-
-    function withdraw(address nftContract, uint256[] calldata tokenIds) external {
+    function withdraw(uint256[] calldata tokenIds) external {
         require(tokenIds.length > 0, "Withdraw zero tokens");
-        address sender = _msgSender();
+        address sender = msg.sender;
 
         for (uint256 i = 0; i < tokenIds.length; ) {
             if (mintSwap404NFT.ownerOf(tokenIds[i]) == sender) {
@@ -58,7 +52,7 @@ contract MintSwap404NFTStake {
                 ++i;
             }
         }
-        emit TokensWithdraw(owner, tokenIds);
+        emit TokensWithdraw(sender, tokenIds);
     }
 
 }
