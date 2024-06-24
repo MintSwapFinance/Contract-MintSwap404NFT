@@ -1,26 +1,34 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import "../node_modules/@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./MintSwap404NFT.sol";
 
-contract MintSwap404NFTBenefit is Ownable {
+contract MintSwap404NFTBenefit is Ownable, ReentrancyGuard {
 
     string private constant __NAME = "MintSwap404NFTBenefit";
 
+    struct UserBenefit {
+        address account;
+        uint256 benefit;
+    }
+
     mapping(address => uint256) public userLPBenefits;
 
-    MintSwap404NFT public mintSwap404NFT;
+    address public mintSwap404NFT;
 
     address public caller;
 
-    address public whale;
+    address public manageAccount;
+
+    uint256 private constant MIN_WITHDRAW_AMOUNT = 1000;
 
     event UpdatedLPBenefits(address indexed user, uint256 benefit);
 
     event WithdrawLPBenefits(address indexed user, uint256 benefit);
 
     constructor(address nftContract) Ownable(_msgSender()) {
-        mintSwap404NFT  = MintSwap404NFT(nftContract);
+        mintSwap404NFT  = nftContract;
     }
 
     function name() public view virtual returns (string memory) {
@@ -28,20 +36,30 @@ contract MintSwap404NFTBenefit is Ownable {
     }
 
     // struct[] for循环
-    function updatedUserBenefits(address user, uint256 benefit) external {
+    function updatedUserBenefits(UserBenefit[] calldata userBenefits) external {
         require(msg.sender == caller, "Invalid sender");
-        userLPBenefits[user] =  userLPBenefits[user] + benefit;
-        emit UpdatedLPBenefits(user, benefit);
+        require(userBenefits.length > 0, "Empty Benefits");
+        for (uint256 i = 0; i < userBenefits.length; ) {
+            UserBenefit memory _userBenefit = userBenefits[i];
+            address _account  = _userBenefit.account;
+            uint256 _benefit  = _userBenefit.benefit;
+            userLPBenefits[_account] = userLPBenefits[_account] + _benefit;
+            emit UpdatedLPBenefits(_account, _benefit);
+            unchecked {
+                ++i;
+            }
+        }
     }
 
     // 可重入
-    function withdrawBenefits(uint256 benefit) external {
+    function withdrawBenefits(uint256 benefit) external nonReentrant {
         // require benefit > 10000
+        require(benefit > MIN_WITHDRAW_AMOUNT, "The withdrawal amount must be greater than 1000");
         address sender = msg.sender;
         uint256 userLPBenefit = userLPBenefits[sender];
-        require(userLPBenefit >= benefit, "");
+        require(userLPBenefit >= benefit, "Invalid benefit");
         userLPBenefits[sender] = userLPBenefit - benefit;
-        mintSwap404NFT.transferFrom(whale, sender, benefit);  // IERC404
+        IERC404(mintSwap404NFT).transferFrom(manageAccount, sender, benefit);  // IERC404
         emit WithdrawLPBenefits(sender, benefit);
     }
 
@@ -51,5 +69,9 @@ contract MintSwap404NFTBenefit is Ownable {
 
     function setCaller(address _caller) public onlyOwner {
         caller =  _caller;
+    }
+
+    function setManageAccount(address account) public onlyOwner {
+        manageAccount = account;
     }
 }

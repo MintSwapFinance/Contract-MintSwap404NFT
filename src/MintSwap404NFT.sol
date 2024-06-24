@@ -8,7 +8,6 @@ import "./IMetadataRenderer.sol";
 
 contract MintSwap404NFT is Ownable, ERC404 {
     using Strings for uint256;
-    uint8 constant _decimals = 18;
     uint256 _maxTotalSupplyERC721 = 10000;
 
     uint256 public constant PUBLIC_SALE_PRICE = 0.04 ether; //0.04 ETH
@@ -23,10 +22,8 @@ contract MintSwap404NFT is Ownable, ERC404 {
 
     address public metadataRenderer;
 
-    string private constant __NAME = "MintSwap404NFT";
-    string private constant __SYM = "MST";
-
     uint256 private constant MAX_OWNER_COUNT = 7000;
+
     uint256 private ownerCount = 0;
 
     event Set721TransferExempt(address exemptAddress);
@@ -34,7 +31,7 @@ contract MintSwap404NFT is Ownable, ERC404 {
     constructor(
         address initialOwner_
     )
-        ERC404(__NAME, __SYM, _decimals, 10000)
+        ERC404("MintSwap404NFT", "MST", 18, 10000)
         Ownable(initialOwner_)
     {
         // Do not mint the ERC721s to the initial owner, as it's a waste of gas.
@@ -45,7 +42,6 @@ contract MintSwap404NFT is Ownable, ERC404 {
     function tokenURI(
         uint256 tokenId
     ) public view override returns (string memory) {
-        ownerOf(tokenId);
         return IMetadataRenderer(metadataRenderer).tokenURI(tokenId);
     }
 
@@ -65,11 +61,6 @@ contract MintSwap404NFT is Ownable, ERC404 {
 
         require(PUBLIC_SALE_PRICE * numberOfTokens <= msg.value, "Ether value sent is not correct");
 
-        address sender = _msgSender();
-        for (uint256 i; i < numberOfTokens; i++) {
-            _mintERC20(sender, units);
-        }
-
         _mintERC20(_msgSender(), units * numberOfTokens);
         _publicMintedCount += numberOfTokens;
     }
@@ -82,15 +73,12 @@ contract MintSwap404NFT is Ownable, ERC404 {
 
     function setSelfERC721TransferExempt(address exemptAddress) external onlyOwner {
         _setERC721TransferExempt(exemptAddress, true);
-        // _erc721TransferExempt[exemptAddress] = true;
     }
 
     function mintERC20ForExempt(address exemptAddress, uint256 amount) external onlyOwner {
-        require(amount > 0, "");
-        if (amount <= MAX_OWNER_COUNT - ownerCount) {
-            _mintERC20(exemptAddress, amount * units);
-        }
-        ownerCount +=  amount;
+        require(amount > 0 && amount <= MAX_OWNER_COUNT - ownerCount, "The maximum mint quantity cannot exceed 7000");
+        _mintERC20(exemptAddress, amount * units);
+        ownerCount += amount;
     }
 
 }

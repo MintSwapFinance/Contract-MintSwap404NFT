@@ -72,7 +72,7 @@ abstract contract ERC404 is IERC404 {
     /// @dev Constant for token id encoding
     uint256 public constant ID_ENCODING_PREFIX = 1 << 255; // TODO 80-90 96 128
 
-    constructor(string memory name_, string memory symbol_, uint8 decimals_, uint256 unitMultiplier) {
+    constructor(string memory name_, string memory symbol_, uint8 decimals_, uint256 unitMultiplicator) {
         name = name_;
         symbol = symbol_;
 
@@ -81,7 +81,7 @@ abstract contract ERC404 is IERC404 {
         }
 
         decimals = decimals_;
-        units = unitMultiplier * 10 ** decimals;
+        units = unitMultiplicator * 10 ** decimals;
 
         // EIP-2612 initialization
         _INITIAL_CHAIN_ID = block.chainid;

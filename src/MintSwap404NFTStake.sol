@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import "../node_modules/@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./MintSwap404NFT.sol";
 
-contract MintSwap404NFTStake is Ownable {
+contract MintSwap404NFTStake is Ownable, ReentrancyGuard {
 
     string private constant __NAME = "MintSwap404NFTStake";
 
@@ -11,9 +12,14 @@ contract MintSwap404NFTStake is Ownable {
 
     mapping(address => uint256) public userStakeBenefits;
 
-    MintSwap404NFT public mintSwap404NFT;
+    address public mintSwap404NFT;
 
     address public caller;
+
+    struct UserBenefit {
+        address account;
+        uint256 benefit;
+    }
 
     event TokensStake(address indexed owner, uint256[] tokenIds);
 
@@ -24,7 +30,7 @@ contract MintSwap404NFTStake is Ownable {
     event WithdrawStakeBenefits(address indexed user, uint256 benefit);
 
     constructor(address nftContract) Ownable(_msgSender()) {
-        mintSwap404NFT  = MintSwap404NFT(nftContract);
+        mintSwap404NFT  = nftContract;
         Ownable(msg.sender);
     }
 
@@ -37,8 +43,8 @@ contract MintSwap404NFTStake is Ownable {
         address sender = msg.sender;
 
         for (uint256 i = 0; i < tokenIds.length; ) {
-            require(mintSwap404NFT.ownerOf(tokenIds[i]) == sender,"Invalid sender");  // IERC404
-            mintSwap404NFT.transferFrom(sender, address(this), tokenIds[i]);
+            require(IERC404(mintSwap404NFT).ownerOf(tokenIds[i]) == sender,"Invalid sender");  // IERC404
+            IERC404(mintSwap404NFT).transferFrom(sender, address(this), tokenIds[i]);
             stakedAddressInfo[sender].push(tokenIds[i]);
             unchecked {
                 ++i;
@@ -52,8 +58,8 @@ contract MintSwap404NFTStake is Ownable {
         address sender = msg.sender;
 
         for (uint256 i = 0; i < tokenIds.length; ) {
-            require(mintSwap404NFT.ownerOf(tokenIds[i]) == address(this),"Invalid sender");  // IERC404
-            mintSwap404NFT.transferFrom(address(this), sender, tokenIds[i]);
+            require(IERC404(mintSwap404NFT).ownerOf(tokenIds[i]) == address(this),"Invalid sender");  // IERC404
+            IERC404(mintSwap404NFT).transferFrom(address(this), sender, tokenIds[i]);
             // stakedAddressInfo pop 找开源
             unchecked {
                 ++i;
@@ -63,14 +69,23 @@ contract MintSwap404NFTStake is Ownable {
     }
 
     // struct[] for循环
-    function updatedStakeBenefits(address user, uint256 benefit) external {
+    function updatedStakeBenefits(UserBenefit[] calldata userBenefits) external {
         require(msg.sender == caller, "Invalid sender");
-        userStakeBenefits[user] = userStakeBenefits[user] + benefit;
-        emit UpdatedStakeBenefits(user, benefit);
+        require(userBenefits.length > 0, "Empty Benefits");
+        for (uint256 i = 0; i < userBenefits.length; ) {
+            UserBenefit memory _userBenefit = userBenefits[i];
+            address _account  = _userBenefit.account;
+            uint256 _benefit  = _userBenefit.benefit;
+            userStakeBenefits[_account] = userStakeBenefits[_account] + _benefit;
+            emit UpdatedStakeBenefits(_account, _benefit);
+            unchecked {
+                ++i;
+            }
+        }
     }
 
     // send eth 可重入
-    function withdrawStakeBenefits(uint256 benefit) external {
+    function withdrawStakeBenefits(uint256 benefit) external nonReentrant {
         // require benefit > 0.00001 Gwei
         address payable sender = payable(msg.sender);
         uint256 userStakeBenefit = userStakeBenefits[sender];
