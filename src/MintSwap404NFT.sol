@@ -3,8 +3,8 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "ERC404.sol";
-import "IMetadataRenderer.sol";
+import "./ERC404.sol";
+import "./IMetadataRenderer.sol";
 
 contract MintSwap404NFT is Ownable, ERC404 {
     using Strings for uint256;

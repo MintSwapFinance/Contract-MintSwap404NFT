@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "MintSwap404NFT.sol";
+import "./MintSwap404NFT.sol";
 
 contract MintSwap404NFTStake {
 

@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
-import "IERC404.sol";
+import "./IERC404.sol";
 import "./lib/DoubleEndedQueue.sol";
 import "./lib/ERC721Events.sol";
 import "./lib/ERC20Events.sol";

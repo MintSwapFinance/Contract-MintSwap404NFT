@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "MintSwap404NFT.sol";
+import "./MintSwap404NFT.sol";
 
-contract MintSwap404NFTBenefit is Ownable{
+contract MintSwap404NFTBenefit is Ownable {
 
     string private constant __NAME = "MintSwap404NFTBenefit";
 
-    mapping(address -> uint256) public userBenefits;
+    mapping(address => uint256) public userBenefits;
 
     function name() public view virtual returns (string memory) {
         return __NAME;
@@ -24,7 +24,7 @@ contract MintSwap404NFTBenefit is Ownable{
     }
 
 
-    function withdrawBenefits(uint256 benefit) public external {
+    function withdrawBenefits(uint256 benefit) external {
 
     }
 
