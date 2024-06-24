@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import "./MintSwap404NFT.sol";
 
-contract MintSwap404NFTBenefit {
+contract MintSwap404NFTBenefit is Ownable {
 
     string private constant __NAME = "MintSwap404NFTBenefit";
 
@@ -11,11 +11,13 @@ contract MintSwap404NFTBenefit {
 
     MintSwap404NFT public mintSwap404NFT;
 
+    address public caller;
+
     event UpdatedLPBenefits(address indexed user, uint256 benefit);
 
     event WithdrawLPBenefits(address indexed user, uint256 benefit);
 
-    constructor(address nftContract) {
+    constructor(address nftContract) Ownable(_msgSender()) {
         mintSwap404NFT  = MintSwap404NFT(nftContract);
     }
 
@@ -24,6 +26,7 @@ contract MintSwap404NFTBenefit {
     }
 
     function updatedUserBenefits(address user, uint256 benefit) external {
+        require(msg.sender == caller, "Invalid sender");
         uint256 userLPBenefit = userLPBenefits[user];
         if (userLPBenefit == 0) {
             userLPBenefits[user] = benefit;
@@ -44,5 +47,9 @@ contract MintSwap404NFTBenefit {
 
     function queryUserBenefits(address user) public view returns (uint256 benefit) {
         return userLPBenefits[user];
+    }
+
+    function setCaller(address _caller) public onlyOwner {
+        caller =  _caller;
     }
 }
