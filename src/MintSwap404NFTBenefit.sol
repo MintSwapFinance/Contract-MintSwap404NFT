@@ -7,15 +7,13 @@ contract MintSwap404NFTBenefit {
 
     string private constant __NAME = "MintSwap404NFTBenefit";
 
-    mapping(address => uint256) public userStakeBenefits;
-
     mapping(address => uint256) public userLPBenefits;
-
-    mapping(address => uint256) public userTradeBenefits;
 
     MintSwap404NFT public mintSwap404NFT;
 
-    address constant MST_OWNER = 0x7A58c0Be72BE218B41C608b7Fe7C5bB630736C71;
+    event UpdatedLPBenefits(address indexed user, uint256 benefit);
+
+    event WithdrawLPBenefits(address indexed user, uint256 benefit);
 
     constructor(address nftContract) {
         mintSwap404NFT  = MintSwap404NFT(nftContract);
@@ -25,57 +23,26 @@ contract MintSwap404NFTBenefit {
         return __NAME;
     }
 
-    function updatedUserStakeBenefits(address user, uint256 benefit) external {
-        uint256 userStakeBenefit = userStakeBenefits[user];
-        if (userStakeBenefit == 0) {
-            userStakeBenefits[user] = benefit;
-        } else {
-            userStakeBenefits[user] = userStakeBenefit + benefit;
-        }
-    }
-
-    function updatedUserLPBenefits(address user, uint256 benefit) external {
+    function updatedUserBenefits(address user, uint256 benefit) external {
         uint256 userLPBenefit = userLPBenefits[user];
         if (userLPBenefit == 0) {
             userLPBenefits[user] = benefit;
         } else {
             userLPBenefits[user] = userLPBenefit + benefit;
         }
+        emit UpdatedLPBenefits(user, benefit);
     }
 
-    function updatedUserTradeBenefits(address user, uint256 benefit) external {
-        uint256 userTradeBenefit = userTradeBenefits[user];
-        if (userTradeBenefit == 0) {
-            userTradeBenefits[user] = benefit;
-        } else {
-            userTradeBenefits[user] = userTradeBenefit + benefit;
-        }
+    function withdrawBenefits(uint256 benefit) external {
+        address sender = msg.sender;
+        uint256 userLPBenefit = userLPBenefits[sender];
+        require(userLPBenefit > 0 && userLPBenefit >= benefit, "");
+        mintSwap404NFT.transferFrom(address(this), sender, benefit);
+        userLPBenefits[sender] = 0;
+        emit WithdrawLPBenefits(sender, benefit);
     }
 
-
-    function withdrawStakeBenefits(uint256 benefit) external {
-        mintSwap404NFT.transferFrom(MST_OWNER, msg.sender, benefit);
-        userLPBenefits[msg.sender] = 0;
-    }
-
-    function withdrawLPBenefits(uint256 benefit) external {
-        mintSwap404NFT.transferFrom(MST_OWNER, msg.sender, benefit);
-        userTradeBenefits[msg.sender] = 0;
-    }
-
-    function withdrawTradeBenefits(uint256 benefit) external {
-        // eth
-    }
-
-    function queryUserStakeBenefits(address user) public view returns (uint256 benefit) {
-        return userStakeBenefits[user];
-    }
-
-    function queryUserLPBenefits(address user) public view returns (uint256 benefit) {
+    function queryUserBenefits(address user) public view returns (uint256 benefit) {
         return userLPBenefits[user];
-    }
-
-    function queryUserTradeBenefits(address user) public view returns (uint256 benefit) {
-        return userTradeBenefits[user];
     }
 }
