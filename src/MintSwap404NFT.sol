@@ -29,8 +29,7 @@ contract MintSwap404NFT is Ownable, ERC404 {
     event Set721TransferExempt(address exemptAddress);
 
     constructor(
-        address initialOwner_,
-        address initialMintRecipient_
+        address initialOwner_
     )
         ERC404(__NAME, __SYM, _decimals)
         Ownable(initialOwner_)

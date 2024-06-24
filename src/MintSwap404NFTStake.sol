@@ -28,10 +28,9 @@ contract MintSwap404NFTStake {
         address sender = msg.sender;
 
         for (uint256 i = 0; i < tokenIds.length; ) {
-            if (mintSwap404NFT.ownerOf(tokenIds[i]) == sender) {
-                mintSwap404NFT.transferFrom(sender, address(this), tokenIds[i]);
-                // stakedAddressInfo[sender].push(tokenIds[i]);
-            }
+            require(mintSwap404NFT.ownerOf(tokenIds[i]) == sender,"Invalid sender");
+            mintSwap404NFT.transferFrom(sender, address(this), tokenIds[i]);
+            // stakedAddressInfo[sender].push(tokenIds[i]);
             unchecked {
                 ++i;
             }
@@ -44,10 +43,9 @@ contract MintSwap404NFTStake {
         address sender = msg.sender;
 
         for (uint256 i = 0; i < tokenIds.length; ) {
-            if (mintSwap404NFT.ownerOf(tokenIds[i]) == sender) {
-                mintSwap404NFT.transferFrom(address(this), sender, tokenIds[i]);
-                // stakedAddressInfo[sender].push(tokenIds[i]);
-            }
+            require(mintSwap404NFT.ownerOf(tokenIds[i]) == address(this),"Invalid sender");
+            mintSwap404NFT.transferFrom(address(this), sender, tokenIds[i]);
+            // stakedAddressInfo[sender].push(tokenIds[i]);
             unchecked {
                 ++i;
             }

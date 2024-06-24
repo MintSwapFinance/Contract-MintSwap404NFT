@@ -25,7 +25,6 @@ contract MintSwap404NFTBenefit {
         return __NAME;
     }
 
-
     function updatedUserStakeBenefits(address user, uint256 benefit) external {
         uint256 userStakeBenefit = userStakeBenefits[user];
         if (userStakeBenefit == 0) {
