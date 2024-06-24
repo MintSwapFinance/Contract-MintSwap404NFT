@@ -15,7 +15,7 @@ contract MintSwap404NFTBenefit {
 
     MintSwap404NFT public mintSwap404NFT;
 
-    address constant MST_OWNER = 0x4565646;
+    address constant MST_OWNER = 0x7A58c0Be72BE218B41C608b7Fe7C5bB630736C71;
 
     constructor(address nftContract) {
         mintSwap404NFT  = MintSwap404NFT(nftContract);
