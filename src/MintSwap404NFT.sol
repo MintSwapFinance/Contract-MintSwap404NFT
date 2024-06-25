@@ -3,10 +3,14 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "../lib/ERC404.sol";
 import "../lib/IMetadataRenderer.sol";
 
-contract MintSwap404NFT is Ownable, ERC404 {
+contract MintSwap404NFT is ERC404, Initializable, OwnableUpgradeable, UUPSUpgradeable {
     using Strings for uint256;
     uint256 _maxTotalSupplyERC721 = 10000;
 
@@ -38,9 +42,16 @@ contract MintSwap404NFT is Ownable, ERC404 {
         address initialOwner_
     )
         ERC404("MintSwap404NFT", "MST", 18, 10000)
-        Ownable(initialOwner_)
+        // Ownable(initialOwner_)
     {
 
+    }
+
+    function initialize(address initialOwner) initializer public {
+        // ERC404("MintSwap404NFT", "MST", 18, 10000);
+        // __ERC721_init("MintSwap404NFT", "MST");
+        __Ownable_init(initialOwner);
+        __UUPSUpgradeable_init();
     }
 
     modifier isSufficient() {
@@ -83,5 +94,11 @@ contract MintSwap404NFT is Ownable, ERC404 {
         require(_endTime > _startTime, "MUST(end time  > Start time)");
         mintConfig = MintConfig( _startTime, _endTime);
     }
+
+    function _authorizeUpgrade(address newImplementation)
+        internal
+        onlyOwner
+        override
+    {}
 
 }
