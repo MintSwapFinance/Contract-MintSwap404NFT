@@ -12,6 +12,8 @@ contract MetadataRenderer is IMetadataRenderer, Ownable {
     string private name;
     string private description;
 
+    uint256 public constant ID_ENCODING_PREFIX = 1 << 128;
+
     constructor(
         string memory _defaultName,
         string memory _description,
@@ -42,7 +44,7 @@ contract MetadataRenderer is IMetadataRenderer, Ownable {
                     '"name": "',
                     name,
                     " #",
-                    Strings.toString(tokenID),  // ID_ENCODING_PREFIX - tokenID
+                    Strings.toString(tokenID - ID_ENCODING_PREFIX),  // tokenID - ID_ENCODING_PREFIX
                     '",',
                     '"description": "',
                     description,

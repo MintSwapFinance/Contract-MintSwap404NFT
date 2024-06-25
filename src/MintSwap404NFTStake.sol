@@ -16,6 +16,8 @@ contract MintSwap404NFTStake is Ownable, ReentrancyGuard {
 
     address public caller;
 
+    uint256 private constant MIN_WITHDRAW_AMOUNT = 0.001 ether;
+
     struct UserBenefit {
         address account;
         uint256 benefit;
@@ -28,6 +30,8 @@ contract MintSwap404NFTStake is Ownable, ReentrancyGuard {
     event UpdatedStakeBenefits(address indexed user, uint256 benefit);
 
     event WithdrawStakeBenefits(address indexed user, uint256 benefit);
+
+    event Received(address sender, uint256 value);
 
     constructor(address nftContract) Ownable(_msgSender()) {
         mintSwap404NFT  = nftContract;
@@ -59,12 +63,22 @@ contract MintSwap404NFTStake is Ownable, ReentrancyGuard {
 
         for (uint256 i = 0; i < tokenIds.length; ) {
             require(IERC404(mintSwap404NFT).ownerOf(tokenIds[i]) == address(this),"Invalid sender");  // IERC404
+            for (uint256 j = 0; j < stakedAddressInfo[sender].length;) {
+                if (tokenIds[i] == stakedAddressInfo[sender][j]) {
+                    // replace and pop
+                    stakedAddressInfo[sender][j] = stakedAddressInfo[sender][stakedAddressInfo[sender].length - 1];
+                    stakedAddressInfo[sender].pop();
+                }
+                unchecked {
+                    ++j;
+                }
+            }
             IERC404(mintSwap404NFT).transferFrom(address(this), sender, tokenIds[i]);
-            // stakedAddressInfo pop 找开源
             unchecked {
                 ++i;
             }
         }
+
         emit TokensWithdraw(sender, tokenIds);
     }
 
@@ -87,11 +101,13 @@ contract MintSwap404NFTStake is Ownable, ReentrancyGuard {
     // send eth 可重入
     function withdrawStakeBenefits(uint256 benefit) external nonReentrant {
         // require benefit > 0.00001 Gwei
+        require(benefit >= MIN_WITHDRAW_AMOUNT, "The withdrawal amount must be greater than 0.001 ether");
         address payable sender = payable(msg.sender);
         uint256 userStakeBenefit = userStakeBenefits[sender];
         require(benefit <= userStakeBenefit, "Current user have no benefit");
         userStakeBenefits[sender] = userStakeBenefit - benefit;
-        sender.transfer(benefit);  // TransferHelper
+        (bool success, ) = sender.call{value: benefit}(new bytes(0));
+        require(success, 'TransferHelper::safeTransferETH: ETH transfer failed');
         emit WithdrawStakeBenefits(sender, benefit);
     }
 
@@ -101,5 +117,9 @@ contract MintSwap404NFTStake is Ownable, ReentrancyGuard {
 
     function setCaller(address _caller) public onlyOwner {
         caller =  _caller;
+    }
+
+    receive() external payable {
+        emit Received(msg.sender, msg.value);
     }
 }

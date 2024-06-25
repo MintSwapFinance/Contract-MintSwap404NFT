@@ -16,9 +16,12 @@ contract MintSwap404NFT is Ownable, ERC404 {
 
     uint256 public _publicMintedCount = 0;
 
-    uint256 public _publicSaleStartTime;// public sale start time
+    struct MintConfig {
+        uint32 startTime;
+        uint32 endTime;
+    }
 
-    uint256 public _publicSaleEndTime;// public sale end time
+    MintConfig public mintConfig;
 
     address public metadataRenderer;
 
@@ -28,15 +31,22 @@ contract MintSwap404NFT is Ownable, ERC404 {
 
     event Set721TransferExempt(address exemptAddress);
 
+    error MintNotStart();
+    error MintFinished();
+
     constructor(
         address initialOwner_
     )
         ERC404("MintSwap404NFT", "MST", 18, 10000)
         Ownable(initialOwner_)
     {
-        // Do not mint the ERC721s to the initial owner, as it's a waste of gas.
-        // _mintERC20(initialMintRecipient_, _maxTotalSupplyERC721 * units);
-        // _publicSaleStartTime = block.timestamp;
+
+    }
+
+    modifier isSufficient() {
+        if (block.timestamp < mintConfig.startTime) revert MintNotStart();
+        if (block.timestamp > mintConfig.endTime) revert MintFinished();
+        _;
     }
 
     function tokenURI(
@@ -49,26 +59,11 @@ contract MintSwap404NFT is Ownable, ERC404 {
         metadataRenderer = _metadataRenderer;
     }
 
-    function mint(uint numberOfTokens) public payable {
-        uint256 _saleStartTime = uint256(_publicSaleStartTime);
-        uint256 _saleEndTime = uint256(_publicSaleEndTime);
-
-        require(_saleStartTime != 0 && block.timestamp >= _saleStartTime, "public sale has not started yet");
-        require(block.timestamp <= _saleEndTime, "public sale has ended");
-
-
+    function mint(uint numberOfTokens) external payable isSufficient {
         require(_publicMintedCount + numberOfTokens <= PUBLIC_SALE_COUNT, "public sale has ended");
-
         require(PUBLIC_SALE_PRICE * numberOfTokens <= msg.value, "Ether value sent is not correct");
-
         _mintERC20(_msgSender(), units * numberOfTokens);
         _publicMintedCount += numberOfTokens;
-    }
-
-    // _publicSaleStartTime setter，onlyOwner
-    function setPublicSaleStartAndEndTime(uint32 statTime, uint32 endTime) external onlyOwner {
-        _publicSaleStartTime = statTime;
-        _publicSaleEndTime = endTime;
     }
 
     function setSelfERC721TransferExempt(address exemptAddress) external onlyOwner {
@@ -79,6 +74,14 @@ contract MintSwap404NFT is Ownable, ERC404 {
         require(amount > 0 && amount <= MAX_OWNER_COUNT - ownerCount, "The maximum mint quantity cannot exceed 7000");
         _mintERC20(exemptAddress, amount * units);
         ownerCount += amount;
+    }
+
+    function setMintConfig(
+        uint32 _startTime,
+        uint32 _endTime
+    ) external onlyOwner {
+        require(_endTime > _startTime, "MUST(end time  > Start time)");
+        mintConfig = MintConfig( _startTime, _endTime);
     }
 
 }
