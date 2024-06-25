@@ -54,7 +54,7 @@ contract MintSwap404NFTBenefit is Ownable, ReentrancyGuard {
     // 可重入
     function withdrawBenefits(uint256 benefit) external nonReentrant {
         // require benefit > 10000
-        require(benefit > MIN_WITHDRAW_AMOUNT, "The withdrawal amount must be greater than 1000");
+        require(benefit >= MIN_WITHDRAW_AMOUNT, "The withdrawal amount must be greater than 1000");
         address sender = msg.sender;
         uint256 userLPBenefit = userLPBenefits[sender];
         require(userLPBenefit >= benefit, "Invalid benefit");
