@@ -1,12 +1,12 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "../node_modules/@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
-import "../node_modules/@openzeppelin/contracts/interfaces/IERC165.sol";
+import "@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
+import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "./IERC404.sol";
-import "../lib/DoubleEndedQueue.sol";
-import "../lib/ERC721Events.sol";
-import "../lib/ERC20Events.sol";
+import "./DoubleEndedQueue.sol";
+import "./ERC721Events.sol";
+import "./ERC20Events.sol";
 
 abstract contract ERC404 is IERC404 {
     using DoubleEndedQueue for DoubleEndedQueue.Uint256Deque;
