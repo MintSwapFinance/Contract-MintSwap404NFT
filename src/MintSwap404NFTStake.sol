@@ -65,7 +65,7 @@ contract MintSwap404NFTStake is Ownable, ReentrancyGuard {
             require(IERC404(mintSwap404NFT).ownerOf(tokenIds[i]) == address(this),"Invalid sender");  // IERC404
             for (uint256 j = 0; j < stakedAddressInfo[sender].length;) {
                 if (j < stakedAddressInfo[sender].length && tokenIds[i] == stakedAddressInfo[sender][j]) {
-                    // replace and pop
+                    // replace tokenId and pop
                     stakedAddressInfo[sender][j] = stakedAddressInfo[sender][stakedAddressInfo[sender].length - 1];
                     stakedAddressInfo[sender].pop();
                 }
