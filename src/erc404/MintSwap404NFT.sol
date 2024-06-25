@@ -36,6 +36,8 @@ contract MintSwap404NFT is ERC404, Initializable, OwnableUpgradeable, UUPSUpgrad
     error MintNotStart();
     error MintFinished();
 
+    event WithdrawETH(address to, uint256 amount);
+
     constructor(
         address initialOwner_
     )
@@ -62,6 +64,7 @@ contract MintSwap404NFT is ERC404, Initializable, OwnableUpgradeable, UUPSUpgrad
     function tokenURI(
         uint256 tokenId
     ) public view override returns (string memory) {
+        require(ownerOf(tokenId) != address(0), "Invalid tokenId");
         return IMetadataRenderer(metadataRenderer).tokenURI(tokenId);
     }
 
@@ -77,8 +80,8 @@ contract MintSwap404NFT is ERC404, Initializable, OwnableUpgradeable, UUPSUpgrad
         _publicMintedCount += numberOfTokens;
     }
 
-    function setERC721TransferExempt(address exemptAddress) external onlyOwner {
-        _setERC721TransferExempt(exemptAddress, true);
+    function setERC721TransferExempt(address exemptAddress, bool state) external onlyOwner {
+        _setERC721TransferExempt(exemptAddress, state);
     }
 
     function mintRewards(address exemptAddress, uint256 amount) external onlyOwner {
@@ -100,5 +103,11 @@ contract MintSwap404NFT is ERC404, Initializable, OwnableUpgradeable, UUPSUpgrad
         onlyOwner
         override
     {}
+
+    function withdrawETH(address _to, uint256 _amount) external onlyOwner {
+        (bool success, ) = _to.call{value: _amount}(new bytes(0));
+        require(success, 'TransferHelper::safeTransferETH: ETH transfer failed');
+        emit WithdrawETH(_to, _amount);
+    }
 
 }

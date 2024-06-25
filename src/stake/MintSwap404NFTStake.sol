@@ -14,7 +14,7 @@ contract MintSwap404NFTStake is Ownable, ReentrancyGuard {
 
     address public benefitUploader;
 
-    uint256 private constant MIN_WITHDRAW_AMOUNT = 0.001 ether;
+    uint256 private constant MIN_WITHDRAW_AMOUNT = 0.0000003 ether;
 
     struct UserBenefit {
         address account;
@@ -28,8 +28,6 @@ contract MintSwap404NFTStake is Ownable, ReentrancyGuard {
     event UpdateStakeBenefits(address indexed user, uint256 benefit);
 
     event WithdrawStakeBenefits(address indexed user, uint256 benefit);
-
-    event Received(address indexed sender, uint256 value);
 
     constructor(address _mintswap404NFT) Ownable(_msgSender()) {
         mintswap404NFT  = _mintswap404NFT;

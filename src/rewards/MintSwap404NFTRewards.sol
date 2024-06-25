@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "../erc404/MintSwap404NFT.sol";
 
-contract MintSwap404NFTRewards is Ownable, ReentrancyGuard {
+contract MintSwap404NFTRewards is Ownable {
 
     struct UserBenefit {
         address account;
@@ -35,8 +34,8 @@ contract MintSwap404NFTRewards is Ownable, ReentrancyGuard {
 
         for (uint256 i = 0; i < userBenefits.length; ) {
             UserBenefit calldata _userBenefit = userBenefits[i];
-            address _account  = _userBenefit.account;
-            uint256 _benefit  = _userBenefit.benefit;
+            address _account = _userBenefit.account;
+            uint256 _benefit = _userBenefit.benefit;
 
             userRewardsBenefits[_account] += _benefit;
             emit UpdateRewardsBenefits(_account, _benefit);
@@ -46,7 +45,7 @@ contract MintSwap404NFTRewards is Ownable, ReentrancyGuard {
         }
     }
 
-    function withdrawBenefits(uint256 benefit) external nonReentrant {
+    function withdrawBenefits(uint256 benefit) external {
         require(benefit >= MIN_WITHDRAW_AMOUNT, "The withdrawal amount must be greater than 1000");
         
         address sender = msg.sender;
