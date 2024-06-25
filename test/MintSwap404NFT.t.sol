@@ -13,7 +13,7 @@ contract TestMintSwap404NFT is Test {
 
     function testMint () public {
         vm.prank(CHEATCODE_ADDRESS);
-        instance.mint(5);
+        instance.publicSale(5);
         assertEq(instance.erc721BalanceOf(CHEATCODE_ADDRESS), 5);
     }
 }

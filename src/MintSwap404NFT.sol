@@ -14,9 +14,9 @@ contract MintSwap404NFT is ERC404, Initializable, OwnableUpgradeable, UUPSUpgrad
     using Strings for uint256;
     uint256 _maxTotalSupplyERC721 = 10000;
 
-    uint256 public constant PUBLIC_SALE_PRICE = 0.04 ether; //0.04 ETH
+    uint256 public constant PUBLIC_SALE_PRICE = 0.04 ether;
 
-    uint256 public constant PUBLIC_SALE_COUNT = 3000; //public sale count
+    uint256 public constant PUBLIC_SALE_COUNT = 3000;
 
     uint256 public _publicMintedCount = 0;
 
@@ -29,11 +29,9 @@ contract MintSwap404NFT is ERC404, Initializable, OwnableUpgradeable, UUPSUpgrad
 
     address public metadataRenderer;
 
-    uint256 private constant MAX_OWNER_COUNT = 7000;
+    uint256 public constant MINTSWAP_REWARDS_COUNT = 7000;
 
-    uint256 private ownerCount = 0;
-
-    event Set721TransferExempt(address exemptAddress);
+    uint256 private _mintswapMintedCount = 0;
 
     error MintNotStart();
     error MintFinished();
@@ -54,7 +52,8 @@ contract MintSwap404NFT is ERC404, Initializable, OwnableUpgradeable, UUPSUpgrad
         __UUPSUpgradeable_init();
     }
 
-    modifier isSufficient() {
+
+    modifier isPublicSaleTime() {
         if (block.timestamp < mintConfig.startTime) revert MintNotStart();
         if (block.timestamp > mintConfig.endTime) revert MintFinished();
         _;
@@ -70,28 +69,29 @@ contract MintSwap404NFT is ERC404, Initializable, OwnableUpgradeable, UUPSUpgrad
         metadataRenderer = _metadataRenderer;
     }
 
-    function mint(uint numberOfTokens) external payable isSufficient {
-        require(_publicMintedCount + numberOfTokens <= PUBLIC_SALE_COUNT, "public sale has ended");
-        require(PUBLIC_SALE_PRICE * numberOfTokens <= msg.value, "Ether value sent is not correct");
-        _mintERC20(_msgSender(), units * numberOfTokens);
+    function publicSale(uint numberOfTokens) external payable isPublicSaleTime {
+        require(numberOfTokens > 0 && _publicMintedCount + numberOfTokens <= PUBLIC_SALE_COUNT, "Mint numberOfTokens exceeds limit");
+        require(PUBLIC_SALE_PRICE * numberOfTokens <= msg.value, "Not Enough ETH value to mint tokens");
+        
+        _mintERC20(_msgSender(), numberOfTokens * units);
         _publicMintedCount += numberOfTokens;
     }
 
-    function setSelfERC721TransferExempt(address exemptAddress) external onlyOwner {
+    function setERC721TransferExempt(address exemptAddress) external onlyOwner {
         _setERC721TransferExempt(exemptAddress, true);
     }
 
-    function mintERC20ForExempt(address exemptAddress, uint256 amount) external onlyOwner {
-        require(amount > 0 && amount <= MAX_OWNER_COUNT - ownerCount, "The maximum mint quantity cannot exceed 7000");
+    function mintRewards(address exemptAddress, uint256 amount) external onlyOwner {
+        require(amount > 0 && _mintswapMintedCount + amount <= MINTSWAP_REWARDS_COUNT, "The maximum mint rewards quantity cannot exceed 7000");
         _mintERC20(exemptAddress, amount * units);
-        ownerCount += amount;
+        _mintswapMintedCount += amount;
     }
 
     function setMintConfig(
         uint32 _startTime,
         uint32 _endTime
     ) external onlyOwner {
-        require(_endTime > _startTime, "MUST(end time  > Start time)");
+        require(_endTime > _startTime, "MUST(_endTime > _startTime)");
         mintConfig = MintConfig( _startTime, _endTime);
     }
 
