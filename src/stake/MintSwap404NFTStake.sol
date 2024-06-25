@@ -2,13 +2,11 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "./MintSwap404NFT.sol";
+import "../erc404/MintSwap404NFT.sol";
 
 contract MintSwap404NFTStake is Ownable, ReentrancyGuard {
 
-    string private constant __NAME = "MintSwap404NFTStake";
-
-    mapping(address => uint256[]) public stakedAddressInfo;
+    mapping(uint256 => address) public stakedToken;
 
     mapping(address => uint256) public userStakeBenefits;
 
@@ -37,10 +35,6 @@ contract MintSwap404NFTStake is Ownable, ReentrancyGuard {
         mintswap404NFT  = _mintswap404NFT;
     }
 
-    function name() public view virtual returns (string memory) {
-        return __NAME;
-    }
-
     function stake(uint256[] calldata tokenIds) external {
         require(tokenIds.length > 0, "Staking zero tokens");
         address sender = msg.sender;
@@ -48,7 +42,7 @@ contract MintSwap404NFTStake is Ownable, ReentrancyGuard {
         for (uint256 i = 0; i < tokenIds.length; ) {
             require(IERC404(mintswap404NFT).ownerOf(tokenIds[i]) == sender, "Invalid tokenId");
             IERC404(mintswap404NFT).transferFrom(sender, address(this), tokenIds[i]);
-            stakedAddressInfo[sender].push(tokenIds[i]);
+            stakedToken[tokenIds[i]] = sender;
             unchecked {
                 ++i;
             }
@@ -62,20 +56,10 @@ contract MintSwap404NFTStake is Ownable, ReentrancyGuard {
         address sender = msg.sender;
 
         for (uint256 i = 0; i < tokenIds.length; ) {
-            require(IERC404(mintswap404NFT).ownerOf(tokenIds[i]) == address(this), "Invalid tokenId");
-
-            for (uint256 j = 0; j < stakedAddressInfo[sender].length;) {
-                if (tokenIds[i] == stakedAddressInfo[sender][j]) {
-                    // replace tokenId and pop
-                    stakedAddressInfo[sender][j] = stakedAddressInfo[sender][stakedAddressInfo[sender].length - 1];
-                    stakedAddressInfo[sender].pop();
-                }
-                unchecked {
-                    ++j;
-                }
-            }
-
+            address nftOwner = stakedToken[tokenIds[i]];
+            require(sender == nftOwner, "Invalid sender");
             IERC404(mintswap404NFT).transferFrom(address(this), sender, tokenIds[i]);
+            delete stakedToken[tokenIds[i]];
             unchecked {
                 ++i;
             }
@@ -117,9 +101,4 @@ contract MintSwap404NFTStake is Ownable, ReentrancyGuard {
     function setBenefitUploader(address _benefitUploader) public onlyOwner {
         benefitUploader =  _benefitUploader;
     }
-
-    receive() external payable {
-        emit Received(msg.sender, msg.value);
-    }
-    
 }

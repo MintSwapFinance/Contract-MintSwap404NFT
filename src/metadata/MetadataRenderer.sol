@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 
-import "../lib/IMetadataRenderer.sol";
+import "./IMetadataRenderer.sol";
 
 contract MetadataRenderer is IMetadataRenderer, Ownable {
     string private imageURI;
@@ -51,7 +51,7 @@ contract MetadataRenderer is IMetadataRenderer, Ownable {
                     '",',
                     '"image": "',
                     imageURI,
-                    Strings.toString(tokenID),
+                    Strings.toString(tokenID - ID_ENCODING_PREFIX),
                     '"}'
                 )
             );

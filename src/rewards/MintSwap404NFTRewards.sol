@@ -2,11 +2,9 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "./MintSwap404NFT.sol";
+import "../erc404/MintSwap404NFT.sol";
 
-contract MintSwap404NFTBenefit is Ownable, ReentrancyGuard {
-
-    string private constant __NAME = "MintSwap404NFTBenefit";
+contract MintSwap404NFTRewards is Ownable, ReentrancyGuard {
 
     struct UserBenefit {
         address account;
@@ -29,10 +27,6 @@ contract MintSwap404NFTBenefit is Ownable, ReentrancyGuard {
 
     constructor(address _mintswap404NFT) Ownable(_msgSender()) {
         mintswap404NFT  = _mintswap404NFT;
-    }
-
-    function name() public view virtual returns (string memory) {
-        return __NAME;
     }
 
     function updatedUserBenefits(UserBenefit[] calldata userBenefits) external {
@@ -58,9 +52,8 @@ contract MintSwap404NFTBenefit is Ownable, ReentrancyGuard {
         address sender = msg.sender;
         uint256 userRewardsBenefit = userRewardsBenefits[sender];
         require(benefit <= userRewardsBenefit, "Invalid withdrawal amount");
-        userRewardsBenefits[sender] = userRewardsBenefit - benefit;
-
         IERC404(mintswap404NFT).transferFrom(rewardsAccount, sender, benefit);
+        userRewardsBenefits[sender] = userRewardsBenefit - benefit;
         emit WithdrawRewardsBenefits(sender, benefit);
     }
 

@@ -7,8 +7,8 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "../lib/ERC404.sol";
-import "../lib/IMetadataRenderer.sol";
+import "./ERC404.sol";
+import "../metadata/IMetadataRenderer.sol";
 
 contract MintSwap404NFT is ERC404, Initializable, OwnableUpgradeable, UUPSUpgradeable {
     using Strings for uint256;

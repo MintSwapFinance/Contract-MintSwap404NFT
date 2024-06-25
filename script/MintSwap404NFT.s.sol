@@ -2,7 +2,7 @@ pragma solidity ^0.8.20;
 
 import "forge-std/console.sol";
 import "forge-std/Script.sol";
-import "../src/MintSwap404NFT.sol";
+import "../src/erc404/MintSwap404NFT.sol";
 import {Upgrades} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 
 contract MintSwap404NFTUUPS is Script {
