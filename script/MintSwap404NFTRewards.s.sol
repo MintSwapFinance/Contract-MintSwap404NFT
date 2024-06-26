@@ -1,3 +1,4 @@
+//SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 import "forge-std/console.sol";
@@ -22,4 +23,5 @@ contract MintSwap404NFTRewardsUUPS is Script {
 
         vm.stopBroadcast();
     }
+    
 }

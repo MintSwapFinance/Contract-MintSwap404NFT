@@ -5,14 +5,11 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./ERC404.sol";
 import "../metadata/IMetadataRenderer.sol";
 
-contract MintSwap404NFT is ERC404, Initializable, OwnableUpgradeable, UUPSUpgradeable {
-    using Strings for uint256;
-    uint256 _maxTotalSupplyERC721 = 10000;
+contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
 
     uint256 public constant PUBLIC_SALE_PRICE = 0.04 ether;
 
@@ -31,29 +28,25 @@ contract MintSwap404NFT is ERC404, Initializable, OwnableUpgradeable, UUPSUpgrad
 
     uint256 public constant MINTSWAP_REWARDS_COUNT = 7000;
 
-    uint256 private _mintswapMintedCount = 0;
+    uint256 public _mintswapMintedCount = 0;
 
     error MintNotStart();
     error MintFinished();
 
-    event WithdrawETH(address to, uint256 amount);
+    event WithdrawETH(address indexed to, uint256 amount);
 
     constructor(
         address initialOwner_
     )
         ERC404("MintSwap404NFT", "MST", 18, 10000)
-        // Ownable(initialOwner_)
     {
 
     }
 
     function initialize(address initialOwner) initializer public {
-        // ERC404("MintSwap404NFT", "MST", 18, 10000);
-        // __ERC721_init("MintSwap404NFT", "MST");
         __Ownable_init(initialOwner);
         __UUPSUpgradeable_init();
     }
-
 
     modifier isPublicSaleTime() {
         if (block.timestamp < mintConfig.startTime) revert MintNotStart();
@@ -106,7 +99,7 @@ contract MintSwap404NFT is ERC404, Initializable, OwnableUpgradeable, UUPSUpgrad
 
     function withdrawETH(address _to, uint256 _amount) external onlyOwner {
         (bool success, ) = _to.call{value: _amount}(new bytes(0));
-        require(success, 'TransferHelper::safeTransferETH: ETH transfer failed');
+        require(success, 'ETH transfer failed');
         emit WithdrawETH(_to, _amount);
     }
 
