@@ -16,7 +16,7 @@ contract MintSwap404NFTUUPS is Script {
 
         address uupsProxy = Upgrades.deployUUPSProxy(
             "MintSwap404NFT.sol",
-            abi.encodeCall(MintSwap404NFT.initialize, (owner))
+            abi.encodeCall(MintSwap404NFT.initialize, (owner,"MintSwap404NFT", "MST", 18, 10000))
         );
 
         console.log("uupsProxy deploy at %s", uupsProxy);

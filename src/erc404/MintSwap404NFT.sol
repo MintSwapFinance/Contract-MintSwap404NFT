@@ -35,17 +35,14 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
 
     event WithdrawETH(address indexed to, uint256 amount);
 
-    constructor(
-        address initialOwner_
-    )
-        ERC404("MintSwap404NFT", "MST", 18, 10000)
-    {
-
+    constructor() {
+        _disableInitializers();
     }
-
-    function initialize(address initialOwner) initializer public {
+    
+    function initialize(address initialOwner,string memory name_, string memory symbol_, uint8 decimals_, uint256 unitMultiplicator_) initializer public {
         __Ownable_init(initialOwner);
         __UUPSUpgradeable_init();
+        __ERC404_init(name_,symbol_,decimals_,unitMultiplicator_);
     }
 
     modifier isPublicSaleTime() {

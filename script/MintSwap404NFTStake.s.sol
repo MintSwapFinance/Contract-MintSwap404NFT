@@ -13,10 +13,11 @@ contract MintSwap404NFTStakeUUPS is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         address owner = vm.envAddress("OWNER");
+        address mintswap404NFT = vm.envAddress("MINTSWAP404NFT");
 
         address uupsProxy = Upgrades.deployUUPSProxy(
             "MintSwap404NFTStake.sol",
-            abi.encodeCall(MintSwap404NFTStake.initialize, (owner))
+            abi.encodeCall(MintSwap404NFTStake.initialize, (owner, mintswap404NFT))
         );
 
         console.log("uupsProxy deploy at %s", uupsProxy);

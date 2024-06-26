@@ -16,9 +16,10 @@ contract TestMintSwap404NFT is Test {
     MintSwap404NFT private instance;
 
     function setUp() public {
+        console.log("=======setUp============");
         proxy = Upgrades.deployUUPSProxy(
             "MintSwap404NFT.sol",
-            abi.encodeCall(MintSwap404NFT.initialize, (CHEATCODE_ADDRESS))
+            abi.encodeCall(MintSwap404NFT.initialize, (CHEATCODE_ADDRESS,"MintSwap404NFT", "MST", 18, 10000))
         );
 
         console.log("uups proxy -> %s", proxy);

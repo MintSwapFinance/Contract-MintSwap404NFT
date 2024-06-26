@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "../erc404/MintSwap404NFT.sol";
 
-contract MintSwap404NFTStake is ReentrancyGuard, OwnableUpgradeable, UUPSUpgradeable {
+contract MintSwap404NFTStake is ReentrancyGuardUpgradeable, OwnableUpgradeable, UUPSUpgradeable {
 
     mapping(uint256 => address) public stakedTokens;
 
@@ -32,13 +32,15 @@ contract MintSwap404NFTStake is ReentrancyGuard, OwnableUpgradeable, UUPSUpgrade
 
     event WithdrawStakeBenefits(address indexed user, uint256 benefit);
 
-    constructor(address _mintswap404NFT) {
-        mintswap404NFT  = _mintswap404NFT;
+    constructor() {
+        _disableInitializers();
     }
 
-    function initialize(address initialOwner) initializer public {
+    function initialize(address initialOwner,address _mintswap404NFT) initializer public {
         __Ownable_init(initialOwner);
         __UUPSUpgradeable_init();
+        __ReentrancyGuard_init();
+        mintswap404NFT  = _mintswap404NFT;
     }
 
     function stake(uint256[] calldata tokenIds) external {
