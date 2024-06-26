@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/utils/Base64.sol";
 import "./IMetadataRenderer.sol";
 
 contract MetadataRenderer is IMetadataRenderer, Ownable {
+
     string private imageURI;
     string private name;
     string private description;
@@ -68,4 +69,5 @@ contract MetadataRenderer is IMetadataRenderer, Ownable {
     function setDescription(string memory _description) external onlyOwner {
         description = _description;
     }
+    
 }

@@ -4,13 +4,12 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "../erc404/MintSwap404NFT.sol";
 
-contract MintSwap404NFTStake is ReentrancyGuard, Initializable, OwnableUpgradeable, UUPSUpgradeable {
+contract MintSwap404NFTStake is ReentrancyGuard, OwnableUpgradeable, UUPSUpgradeable {
 
-    mapping(uint256 => address) public stakedToken;
+    mapping(uint256 => address) public stakedTokens;
 
     mapping(address => uint256) public userStakeBenefits;
 
@@ -18,7 +17,7 @@ contract MintSwap404NFTStake is ReentrancyGuard, Initializable, OwnableUpgradeab
 
     address public benefitUploader;
 
-    uint256 private constant MIN_WITHDRAW_AMOUNT = 0.0000003 ether;
+    uint256 public constant MIN_WITHDRAW_AMOUNT = 0.0000001 ether;
 
     struct UserBenefit {
         address account;
@@ -49,7 +48,7 @@ contract MintSwap404NFTStake is ReentrancyGuard, Initializable, OwnableUpgradeab
         for (uint256 i = 0; i < tokenIds.length; ) {
             require(IERC404(mintswap404NFT).ownerOf(tokenIds[i]) == sender, "Invalid tokenId");
             IERC404(mintswap404NFT).transferFrom(sender, address(this), tokenIds[i]);
-            stakedToken[tokenIds[i]] = sender;
+            stakedTokens[tokenIds[i]] = sender;
             unchecked {
                 ++i;
             }
@@ -63,10 +62,10 @@ contract MintSwap404NFTStake is ReentrancyGuard, Initializable, OwnableUpgradeab
         address sender = msg.sender;
 
         for (uint256 i = 0; i < tokenIds.length; ) {
-            address nftOwner = stakedToken[tokenIds[i]];
-            require(sender == nftOwner, "Invalid sender");
+            address nftOwner = stakedTokens[tokenIds[i]];
+            require(sender == nftOwner, "Invalid tokenId");
             IERC404(mintswap404NFT).transferFrom(address(this), sender, tokenIds[i]);
-            delete stakedToken[tokenIds[i]];
+            delete stakedTokens[tokenIds[i]];
             unchecked {
                 ++i;
             }
@@ -93,7 +92,7 @@ contract MintSwap404NFTStake is ReentrancyGuard, Initializable, OwnableUpgradeab
     }
 
     function withdrawStakeBenefits(uint256 benefit) external nonReentrant {
-        require(benefit >= MIN_WITHDRAW_AMOUNT, "The withdrawal amount must be greater than 0.001 ether");
+        require(benefit >= MIN_WITHDRAW_AMOUNT, "The withdrawal amount must be greater than 0.0000001 ether");
         
         address payable sender = payable(msg.sender);
         uint256 userStakeBenefit = userStakeBenefits[sender];
@@ -101,7 +100,7 @@ contract MintSwap404NFTStake is ReentrancyGuard, Initializable, OwnableUpgradeab
         userStakeBenefits[sender] = userStakeBenefit - benefit;
 
         (bool success, ) = sender.call{value: benefit}(new bytes(0));
-        require(success, 'TransferHelper::safeTransferETH: ETH transfer failed');
+        require(success, 'ETH transfer failed');
         emit WithdrawStakeBenefits(sender, benefit);
     }
 
@@ -114,4 +113,5 @@ contract MintSwap404NFTStake is ReentrancyGuard, Initializable, OwnableUpgradeab
         onlyOwner
         override
     {}
+
 }

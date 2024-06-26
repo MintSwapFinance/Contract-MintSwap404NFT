@@ -3,12 +3,10 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "../erc404/MintSwap404NFT.sol";
 
-
-contract MintSwap404NFTRewards is Initializable, OwnableUpgradeable, UUPSUpgradeable{
+contract MintSwap404NFTRewards is OwnableUpgradeable, UUPSUpgradeable {
 
     struct UserBenefit {
         address account;
@@ -23,7 +21,7 @@ contract MintSwap404NFTRewards is Initializable, OwnableUpgradeable, UUPSUpgrade
 
     address public rewardsAccount;
 
-    uint256 private constant MIN_WITHDRAW_AMOUNT = 1000;
+    uint256 public constant MIN_WITHDRAW_AMOUNT = 1000;
 
     event UpdateRewardsBenefits(address indexed user, uint256 benefit);
 
@@ -61,8 +59,9 @@ contract MintSwap404NFTRewards is Initializable, OwnableUpgradeable, UUPSUpgrade
         address sender = msg.sender;
         uint256 userRewardsBenefit = userRewardsBenefits[sender];
         require(benefit <= userRewardsBenefit, "Invalid withdrawal amount");
-        IERC404(mintswap404NFT).transferFrom(rewardsAccount, sender, benefit);
         userRewardsBenefits[sender] = userRewardsBenefit - benefit;
+
+        IERC404(mintswap404NFT).transferFrom(rewardsAccount, sender, benefit);
         emit WithdrawRewardsBenefits(sender, benefit);
     }
 
