@@ -2,9 +2,13 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "../erc404/MintSwap404NFT.sol";
 
-contract MintSwap404NFTStake is Ownable, ReentrancyGuard {
+contract MintSwap404NFTStake is ReentrancyGuard, Initializable, OwnableUpgradeable, UUPSUpgradeable {
 
     mapping(uint256 => address) public stakedToken;
 
@@ -29,8 +33,13 @@ contract MintSwap404NFTStake is Ownable, ReentrancyGuard {
 
     event WithdrawStakeBenefits(address indexed user, uint256 benefit);
 
-    constructor(address _mintswap404NFT) Ownable(_msgSender()) {
+    constructor(address _mintswap404NFT) {
         mintswap404NFT  = _mintswap404NFT;
+    }
+
+    function initialize(address initialOwner) initializer public {
+        __Ownable_init(initialOwner);
+        __UUPSUpgradeable_init();
     }
 
     function stake(uint256[] calldata tokenIds) external {
@@ -99,4 +108,10 @@ contract MintSwap404NFTStake is Ownable, ReentrancyGuard {
     function setBenefitUploader(address _benefitUploader) public onlyOwner {
         benefitUploader =  _benefitUploader;
     }
+
+    function _authorizeUpgrade(address newImplementation)
+        internal
+        onlyOwner
+        override
+    {}
 }
