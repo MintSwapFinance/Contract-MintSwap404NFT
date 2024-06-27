@@ -15,7 +15,7 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
 
     uint256 public constant PUBLIC_SALE_COUNT = 3000;
 
-    uint256 public _publicMintedCount = 0;
+    uint256 public _publicMintedCount;
 
     struct MintConfig {
         uint32 startTime;
@@ -28,7 +28,7 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
 
     uint256 public constant MINTSWAP_REWARDS_COUNT = 7000;
 
-    uint256 public _mintswapMintedCount = 0;
+    uint256 public _mintswapMintedCount;
 
     error MintNotStart();
     error MintFinished();
@@ -43,6 +43,8 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
         __Ownable_init(initialOwner);
         __UUPSUpgradeable_init();
         __ERC404_init(name_,symbol_,decimals_,unitMultiplicator_);
+        _mintswapMintedCount = 0;
+        _publicMintedCount = 0;
     }
 
     modifier isPublicSaleTime() {
