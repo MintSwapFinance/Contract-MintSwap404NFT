@@ -34,9 +34,10 @@ contract TestMintSwap404NFT is Test {
 
     function testMint () public {
         console.log("testMint");
+        console.log(block.timestamp);
         vm.prank(CHEATCODE_ADDRESS);
-        uint32 _start = 1719368559;
-        uint32 _end = 1719968559;
+        uint32 _start = 1719457722;
+        uint32 _end = 1721457722;
         instance.setMintConfig(_start,_end);
         instance.publicSale(5);
         assertEq(instance.erc721BalanceOf(CHEATCODE_ADDRESS), 5);

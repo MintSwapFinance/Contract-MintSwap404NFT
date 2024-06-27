@@ -35,6 +35,7 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
 
     event WithdrawETH(address indexed to, uint256 amount);
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
     }
