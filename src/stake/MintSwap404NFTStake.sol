@@ -32,6 +32,7 @@ contract MintSwap404NFTStake is ReentrancyGuardUpgradeable, OwnableUpgradeable, 
 
     event WithdrawStakeBenefits(address indexed user, uint256 benefit);
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
     }

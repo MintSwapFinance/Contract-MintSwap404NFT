@@ -14,6 +14,11 @@ contract MintSwap404NFTRewards is Initializable, OwnableUpgradeable, UUPSUpgrade
         uint256 benefit;
     }
 
+    UserBenefit public userBenefit;
+
+    UserBenefit[] public userBenefits;
+
+
     mapping(address => uint256) public userRewardsBenefits;
 
     address public mintswap404NFT;
@@ -28,6 +33,7 @@ contract MintSwap404NFTRewards is Initializable, OwnableUpgradeable, UUPSUpgrade
 
     event WithdrawRewardsBenefits(address indexed user, uint256 benefit);
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
     }
