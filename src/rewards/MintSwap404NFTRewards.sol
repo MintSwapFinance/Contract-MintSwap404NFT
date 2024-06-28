@@ -39,7 +39,7 @@ contract MintSwap404NFTRewards is Initializable, OwnableUpgradeable, UUPSUpgrade
         mintswap404NFT  = _mintswap404NFT;
     }
 
-    function updatedUserBenefits(UserBenefit[] calldata userBenefits) external {
+    function updateUserBenefits(UserBenefit[] calldata userBenefits) external {
         require(msg.sender == benefitUploader, "Invalid benefitUploader");
         require(userBenefits.length > 0, "Empty Benefits");
 

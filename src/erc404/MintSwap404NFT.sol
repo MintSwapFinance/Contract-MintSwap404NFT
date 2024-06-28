@@ -43,7 +43,7 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
     function initialize(address initialOwner,string memory name_, string memory symbol_, uint8 decimals_, uint256 unitMultiplicator_) initializer public {
         __Ownable_init(initialOwner);
         __UUPSUpgradeable_init();
-        __ERC404_init(name_,symbol_,decimals_,unitMultiplicator_);
+        __ERC404_init(name_, symbol_, decimals_, unitMultiplicator_);
         _mintswapMintedCount = 0;
         _publicMintedCount = 0;
     }

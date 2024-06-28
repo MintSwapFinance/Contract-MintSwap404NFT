@@ -53,6 +53,7 @@ contract MetadataRenderer is IMetadataRenderer, Ownable {
                     '"image": "',
                     imageURI,
                     Strings.toString(tokenID - ID_ENCODING_PREFIX),
+                    ".png",
                     '"}'
                 )
             );

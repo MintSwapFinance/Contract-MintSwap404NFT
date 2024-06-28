@@ -77,7 +77,7 @@ contract MintSwap404NFTStake is ReentrancyGuardUpgradeable, OwnableUpgradeable, 
         emit TokensWithdraw(sender, tokenIds);
     }
 
-    function updatedStakeBenefits(UserBenefit[] calldata userBenefits) external {
+    function updateStakeBenefits(UserBenefit[] calldata userBenefits) external {
         require(msg.sender == benefitUploader, "Invalid benefitUploader");
         require(userBenefits.length > 0, "Empty Benefits");
 
@@ -117,4 +117,6 @@ contract MintSwap404NFTStake is ReentrancyGuardUpgradeable, OwnableUpgradeable, 
         override
     {}
 
+    receive() external payable {
+    }
 }
