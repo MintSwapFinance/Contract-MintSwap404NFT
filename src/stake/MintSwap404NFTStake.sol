@@ -13,6 +13,8 @@ contract MintSwap404NFTStake is ReentrancyGuardUpgradeable, OwnableUpgradeable, 
 
     mapping(address => uint256) public userStakeBenefits;
 
+    mapping(uint256 => bool) public stakeUploadTag;
+
     address public mintswap404NFT;
 
     address public benefitUploader;
@@ -28,7 +30,7 @@ contract MintSwap404NFTStake is ReentrancyGuardUpgradeable, OwnableUpgradeable, 
 
     event TokensWithdraw(address indexed owner, uint256[] tokenIds);
 
-    event UpdateStakeBenefits(address indexed user, uint256 benefit);
+    event UploadStakeBenefits(address indexed user, uint256 benefit, uint256 uploadTag);
 
     event WithdrawStakeBenefits(address indexed user, uint256 benefit);
 
@@ -77,7 +79,8 @@ contract MintSwap404NFTStake is ReentrancyGuardUpgradeable, OwnableUpgradeable, 
         emit TokensWithdraw(sender, tokenIds);
     }
 
-    function updateStakeBenefits(UserBenefit[] calldata userBenefits) external {
+    function uploadStakeBenefits(UserBenefit[] calldata userBenefits, uint256 uploadTag) external {
+        require(stakeUploadTag[uploadTag] == false, "The stake benefits for this time has already been upload");
         require(msg.sender == benefitUploader, "Invalid benefitUploader");
         require(userBenefits.length > 0, "Empty Benefits");
 
@@ -87,11 +90,12 @@ contract MintSwap404NFTStake is ReentrancyGuardUpgradeable, OwnableUpgradeable, 
             uint256 _benefit  = _userBenefit.benefit;
             
             userStakeBenefits[_account] += _benefit;
-            emit UpdateStakeBenefits(_account, _benefit);
+            emit UploadStakeBenefits(_account, _benefit, uploadTag);
             unchecked {
                 ++i;
             }
         }
+        stakeUploadTag[uploadTag] = true;
     }
 
     function withdrawStakeBenefits(uint256 benefit) external nonReentrant {

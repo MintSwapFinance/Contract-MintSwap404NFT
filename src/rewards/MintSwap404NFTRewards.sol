@@ -16,6 +16,8 @@ contract MintSwap404NFTRewards is Initializable, OwnableUpgradeable, UUPSUpgrade
 
     mapping(address => uint256) public userRewardsBenefits;
 
+    mapping(uint256 => bool) public rewardsUploadTag;
+
     address public mintswap404NFT;
 
     address public benefitUploader;
@@ -24,9 +26,9 @@ contract MintSwap404NFTRewards is Initializable, OwnableUpgradeable, UUPSUpgrade
 
     uint256 public constant MIN_WITHDRAW_AMOUNT = 1000;
 
-    event UpdateRewardsBenefits(address indexed user, uint256 benefit);
-
     event WithdrawRewardsBenefits(address indexed user, uint256 benefit);
+
+    event UserRewardsUploaded(address indexed user, uint256 benefit, uint256 uploadTag);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -39,7 +41,8 @@ contract MintSwap404NFTRewards is Initializable, OwnableUpgradeable, UUPSUpgrade
         mintswap404NFT  = _mintswap404NFT;
     }
 
-    function updateUserBenefits(UserBenefit[] calldata userBenefits) external {
+    function uploadUserBenefits(UserBenefit[] calldata userBenefits,uint256 uploadTag) external {
+        require(rewardsUploadTag[uploadTag] == false, "The rewards for this time has already been upload");
         require(msg.sender == benefitUploader, "Invalid benefitUploader");
         require(userBenefits.length > 0, "Empty Benefits");
 
@@ -49,11 +52,12 @@ contract MintSwap404NFTRewards is Initializable, OwnableUpgradeable, UUPSUpgrade
             uint256 _benefit = _userBenefit.benefit;
 
             userRewardsBenefits[_account] += _benefit;
-            emit UpdateRewardsBenefits(_account, _benefit);
+            emit UserRewardsUploaded(_account, _benefit, uploadTag);
             unchecked {
                 ++i;
             }
         }
+        rewardsUploadTag[uploadTag] = true;
     }
 
     function withdrawBenefits(uint256 benefit) external {
