@@ -1,9 +1,6 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./ERC404.sol";
@@ -40,12 +37,16 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
         _disableInitializers();
     }
     
-    function initialize(address initialOwner,string memory name_, string memory symbol_, uint8 decimals_, uint256 unitMultiplicator_) initializer public {
+    function initialize(
+        address initialOwner, 
+        string memory name_, 
+        string memory symbol_, 
+        uint8 decimals_, 
+        uint256 unitMultiplicator_
+    ) public initializer {
         __Ownable_init(initialOwner);
         __UUPSUpgradeable_init();
         __ERC404_init(name_, symbol_, decimals_, unitMultiplicator_);
-        _mintswapMintedCount = 0;
-        _publicMintedCount = 0;
     }
 
     modifier isPublicSaleTime() {
@@ -78,7 +79,9 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
     }
 
     function mintRewards(address exemptAddress, uint256 amount) external onlyOwner {
+        require(erc721TransferExempt(exemptAddress), "The address is not erc721TransferExempt");
         require(amount > 0 && _mintswapMintedCount + amount <= MINTSWAP_REWARDS_COUNT, "The maximum mint rewards quantity cannot exceed 7000");
+        
         _mintERC20(exemptAddress, amount * units);
         _mintswapMintedCount += amount;
     }

@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "../erc404/MintSwap404NFT.sol";
 
-contract MintSwap404NFTRewards is Initializable, OwnableUpgradeable, UUPSUpgradeable {
+contract MintSwap404NFTRewards is OwnableUpgradeable, UUPSUpgradeable {
 
     struct UserBenefit {
         address account;
@@ -16,7 +14,7 @@ contract MintSwap404NFTRewards is Initializable, OwnableUpgradeable, UUPSUpgrade
 
     mapping(address => uint256) public userRewardsBenefits;
 
-    mapping(uint256 => bool) public rewardsUploadTag;
+    mapping(uint256 => bool) public rewardsUploadTags;
 
     address public mintswap404NFT;
 
@@ -38,11 +36,11 @@ contract MintSwap404NFTRewards is Initializable, OwnableUpgradeable, UUPSUpgrade
     function initialize(address initialOwner, address _mintswap404NFT) initializer public {
         __Ownable_init(initialOwner);
         __UUPSUpgradeable_init();
-        mintswap404NFT  = _mintswap404NFT;
+        mintswap404NFT = _mintswap404NFT;
     }
 
-    function uploadUserBenefits(UserBenefit[] calldata userBenefits,uint256 uploadTag) external {
-        require(rewardsUploadTag[uploadTag] == false, "The rewards for this time has already been upload");
+    function uploadUserBenefits(UserBenefit[] calldata userBenefits, uint256 uploadTag) external {
+        require(!rewardsUploadTags[uploadTag], "The rewards for this tag has already been uploaded");
         require(msg.sender == benefitUploader, "Invalid benefitUploader");
         require(userBenefits.length > 0, "Empty Benefits");
 
@@ -57,7 +55,7 @@ contract MintSwap404NFTRewards is Initializable, OwnableUpgradeable, UUPSUpgrade
                 ++i;
             }
         }
-        rewardsUploadTag[uploadTag] = true;
+        rewardsUploadTags[uploadTag] = true;
     }
 
     function withdrawBenefits(uint256 benefit) external {
