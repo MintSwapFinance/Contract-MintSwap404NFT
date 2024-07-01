@@ -3,6 +3,8 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
+import "@openzeppelin/contracts/interfaces/IERC721.sol";
+import "@openzeppelin/contracts/interfaces/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./IERC404.sol";
 import "../lib/DoubleEndedQueue.sol";
@@ -439,7 +441,10 @@ abstract contract ERC404 is IERC404, Initializable {
     ) public view virtual returns (bool) {
         return
             interfaceId == type(IERC404).interfaceId ||
-            interfaceId == type(IERC165).interfaceId;
+            interfaceId == type(IERC165).interfaceId ||
+            interfaceId == type(IERC721).interfaceId ||
+            interfaceId == type(IERC20).interfaceId
+            ;
     }
 
     /// @notice Function to check if address is transfer exempt
