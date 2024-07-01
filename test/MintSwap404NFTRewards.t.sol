@@ -75,7 +75,7 @@ contract TestMintSwap404NFTRewards is Test {
 
         MintSwap404NFTRewards.UserBenefit[] memory userBenefits2 = new MintSwap404NFTRewards.UserBenefit[](1);
         userBenefits2[0] = userBenefit2;
-        vm.expectRevert(bytes("The rewards for this time has already been upload"));
+        vm.expectRevert(bytes("The rewards for this tag has already been uploaded"));
         rewardsInstance.uploadUserBenefits(userBenefits2,202406292000000001);
         vm.stopPrank();
 
