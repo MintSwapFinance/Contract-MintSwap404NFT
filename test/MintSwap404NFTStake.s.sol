@@ -74,6 +74,13 @@ contract TestMintSwap404NFTStake is Test {
         stakeInstance.stake(ownesTokenIds);
         assertEq(instance.ownerOf(ownesTokenIds[0]), stakeProxy);
         assertEq(instance.owned(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D).length, 0);
+
+
+
+        // withdraw
+        stakeInstance.withdraw(ownesTokenIds);
+        assertEq(instance.ownerOf(ownesTokenIds[0]), 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
+        assertEq(instance.owned(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D).length, 1);
         vm.stopPrank();
 
     }
