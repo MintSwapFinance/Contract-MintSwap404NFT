@@ -42,6 +42,8 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
 
     bytes32 public markleRoot;
 
+    mapping(address => bool) public whitelistMintTag;
+
     error MintNotStart();
     error MintFinished();
 
@@ -136,16 +138,17 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
         require(success, 'ETH transfer failed');
         emit WithdrawETH(_to, _amount);
     }
-    
+
     function whitelistSale(bytes32[] calldata _proof) external payable isWhitslistSaleTime {
         address account = _msgSender();
         if (!_verify(account, _proof)) revert UnauthorizedMinter(account);
         require(_whitelistMintedCount + 1 <= WHITELIST_SALE_COUNT, "White list mint exceeds limit");
         require(WHITELIST_SALE_PRICE <= msg.value, "Not Enough ETH value to mint tokens");
-        
+        require(!whitelistMintTag[account], "This account has already minted");
         _mintERC20(account, units);
         _publicMintedCount++;
         _whitelistMintedCount++;
+        whitelistMintTag[account] = true;
     }
 
     // Merkle verify
