@@ -15,10 +15,10 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
 
     uint256 public constant SALE_TOTAL_COUNT = 3000;
 
-    uint256 public constant WHITELIST_SALE_COUNT = 500;
+    uint256 public constant WL_SALE_COUNT = 500;
 
     uint256 public _publicMintedCount;
-    uint256 public _whitelistMintedCount;
+    uint256 public _wlMintedCount;
 
     struct MintConfig {
         uint32 startTime;
@@ -27,14 +27,9 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
 
     MintConfig public mintConfig;
 
-    struct WhitelistConfig {
-        uint32 startTime;
-        uint32 endTime;
-    }
+    MintConfig public wlConfig;
 
-    WhitelistConfig public whitelistConfig;
-
-    address public metadataRenderer;
+    mapping(address => bool) public wlMinted;
 
     uint256 public constant MINTSWAP_REWARDS_COUNT = 7000;
 
@@ -42,7 +37,7 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
 
     bytes32 public markleRoot;
 
-    mapping(address => bool) public whitelistMintTag;
+    address public metadataRenderer;
 
     error MintNotStart();
     error MintFinished();
@@ -74,9 +69,9 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
         _;
     }
 
-    modifier isWhitslistSaleTime() {
-        if (block.timestamp < whitelistConfig.startTime) revert MintNotStart();
-        if (block.timestamp > whitelistConfig.endTime) revert MintFinished();
+    modifier isWLSaleTime() {
+        if (block.timestamp < wlConfig.startTime) revert MintNotStart();
+        if (block.timestamp > wlConfig.endTime) revert MintFinished();
         _;
     }
 
@@ -87,8 +82,26 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
         return IMetadataRenderer(metadataRenderer).tokenURI(tokenId);
     }
 
-    function setMetadataRenderer(address _metadataRenderer) public onlyOwner {
+    function setMetadataRenderer(address _metadataRenderer) external onlyOwner {
         metadataRenderer = _metadataRenderer;
+    }
+
+    function setERC721TransferExempt(address exemptAddress, bool state) external onlyOwner {
+        _setERC721TransferExempt(exemptAddress, state);
+    }
+
+    function wlSale(bytes32[] calldata _proof) external payable isWLSaleTime {
+        address account = _msgSender();
+        if (!_verify(account, _proof)) revert UnauthorizedMinter(account);
+
+        require(!wlMinted[account], "This account has already WL minted");
+        require(_wlMintedCount + 1 <= WL_SALE_COUNT, "WL mint exceeds limit");
+        require(WHITELIST_SALE_PRICE <= msg.value, "Not Enough ETH value to WL mint tokens");
+
+        _mintERC20(account, units);
+        wlMinted[account] = true;
+        _publicMintedCount++;
+        _wlMintedCount++;
     }
 
     function publicSale(uint numberOfTokens) external payable isPublicSaleTime {
@@ -97,10 +110,6 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
         
         _mintERC20(_msgSender(), numberOfTokens * units);
         _publicMintedCount += numberOfTokens;
-    }
-
-    function setERC721TransferExempt(address exemptAddress, bool state) external onlyOwner {
-        _setERC721TransferExempt(exemptAddress, state);
     }
 
     function mintRewards(address exemptAddress, uint256 amount) external onlyOwner {
@@ -119,12 +128,12 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
         mintConfig = MintConfig( _startTime, _endTime);
     }
 
-    function setWhitelistConfig(
+    function setWLConfig(
         uint32 _startTime,
         uint32 _endTime
     ) external onlyOwner {
         require(_endTime > _startTime, "MUST(_endTime > _startTime)");
-        whitelistConfig = WhitelistConfig( _startTime, _endTime);
+        wlConfig = MintConfig( _startTime, _endTime);
     }
 
     function _authorizeUpgrade(address newImplementation)
@@ -139,19 +148,6 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
         emit WithdrawETH(_to, _amount);
     }
 
-    function whitelistSale(bytes32[] calldata _proof) external payable isWhitslistSaleTime {
-        address account = _msgSender();
-        if (!_verify(account, _proof)) revert UnauthorizedMinter(account);
-        require(_whitelistMintedCount + 1 <= WHITELIST_SALE_COUNT, "White list mint exceeds limit");
-        require(WHITELIST_SALE_PRICE <= msg.value, "Not Enough ETH value to mint tokens");
-        require(!whitelistMintTag[account], "This account has already minted");
-        _mintERC20(account, units);
-        _publicMintedCount++;
-        _whitelistMintedCount++;
-        whitelistMintTag[account] = true;
-    }
-
-    // Merkle verify
     function _verify(
         address _account,
         bytes32[] memory _proof
