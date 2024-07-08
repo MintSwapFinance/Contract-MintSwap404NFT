@@ -10,13 +10,11 @@ contract MintSwap404NFTStake is ReentrancyGuardUpgradeable, OwnableUpgradeable, 
 
     mapping(uint256 => address) public stakedTokens;
 
-    mapping(address => uint256) public userStakeBenefits;
-
-    mapping(uint256 => bool) public stakeUploadTags;
+    mapping(address => uint256) public alreadyClaim;
 
     address public mintswap404NFT;
 
-    address public benefitUploader;
+    address public signer;
 
     uint256 public constant MIN_WITHDRAW_AMOUNT = 0.0000001 ether;
 
@@ -28,8 +26,6 @@ contract MintSwap404NFTStake is ReentrancyGuardUpgradeable, OwnableUpgradeable, 
     event TokensStake(address indexed owner, uint256[] tokenIds);
 
     event TokensWithdraw(address indexed owner, uint256[] tokenIds);
-
-    event UploadStakeBenefits(address indexed user, uint256 benefit, uint256 uploadTag);
 
     event WithdrawStakeBenefits(address indexed user, uint256 benefit);
 
@@ -78,40 +74,26 @@ contract MintSwap404NFTStake is ReentrancyGuardUpgradeable, OwnableUpgradeable, 
         emit TokensWithdraw(sender, tokenIds);
     }
 
-    function uploadStakeBenefits(UserBenefit[] calldata userBenefits, uint256 uploadTag) external {
-        require(!stakeUploadTags[uploadTag], "The stake benefits for this tag has already been uploaded");
-        require(msg.sender == benefitUploader, "Invalid benefitUploader");
-        require(userBenefits.length > 0, "Empty Benefits");
-
-        for (uint256 i = 0; i < userBenefits.length; ) {
-            UserBenefit calldata _userBenefit = userBenefits[i];
-            address _account  = _userBenefit.account;
-            uint256 _benefit  = _userBenefit.benefit;
-            
-            userStakeBenefits[_account] += _benefit;
-            emit UploadStakeBenefits(_account, _benefit, uploadTag);
-            unchecked {
-                ++i;
-            }
-        }
-        stakeUploadTags[uploadTag] = true;
-    }
-
-    function withdrawStakeBenefits(uint256 benefit) external nonReentrant {
-        require(benefit >= MIN_WITHDRAW_AMOUNT, "The withdrawal amount must be greater than 0.0000001 ether");
-        
+    function withdrawStakeBenefits(
+        uint256 _amount,
+        bytes32 _r,
+        bytes32 _s,
+        uint8 _v
+    ) external nonReentrant {
         address payable sender = payable(msg.sender);
-        uint256 userStakeBenefit = userStakeBenefits[sender];
-        require(benefit <= userStakeBenefit, "Invalid withdrawal amount");
-        userStakeBenefits[sender] = userStakeBenefit - benefit;
-
-        (bool success, ) = sender.call{value: benefit}(new bytes(0));
+        require(_verfySigner(sender, _amount, _r, _s, _v) == signer, "Invalid signer");
+        uint256 canClaimAmount = _amount - alreadyClaim[sender];
+        require(canClaimAmount >= MIN_WITHDRAW_AMOUNT, "The withdrawal amount must be greater than 0.0000001 ether");
+        
+        (bool success, ) = sender.call{value: canClaimAmount}(new bytes(0));
         require(success, 'ETH transfer failed');
-        emit WithdrawStakeBenefits(sender, benefit);
+
+        alreadyClaim[sender] = _amount;
+        emit WithdrawStakeBenefits(sender, canClaimAmount);
     }
 
-    function setBenefitUploader(address _benefitUploader) public onlyOwner {
-        benefitUploader = _benefitUploader;
+    function setSigner(address _signer) public onlyOwner {
+        signer = _signer;
     }
 
     function _authorizeUpgrade(address newImplementation)
@@ -119,6 +101,50 @@ contract MintSwap404NFTStake is ReentrancyGuardUpgradeable, OwnableUpgradeable, 
         onlyOwner
         override
     {}
+
+    function _verfySigner(
+        address _user,
+        uint256 _amount,
+        bytes32 _r,
+        bytes32 _s,
+        uint8 _v
+    ) internal view returns (address _signer) {
+        _signer = ecrecover(
+            keccak256(
+                abi.encodePacked(
+                    "\x19\x01",
+                    _computeDomainSeparator(),
+                    keccak256(
+                        abi.encode(
+                            keccak256(
+                                "UserStakeBenefit(address user,uint256 amount)"
+                            ),
+                            _user,
+                            _amount
+                        )
+                    )
+                )
+            ),
+            _v,
+            _r,
+            _s
+        );
+    }
+
+    function _computeDomainSeparator() internal view returns (bytes32) {
+        return
+            keccak256(
+                abi.encode(
+                    keccak256(
+                        "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
+                    ),
+                    keccak256(bytes("MintSwap404NFTStake")),
+                    keccak256("1"),
+                    block.chainid,
+                    address(this)
+                )
+            );
+    }
 
     receive() external payable {}
 

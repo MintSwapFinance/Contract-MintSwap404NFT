@@ -7,26 +7,17 @@ import "../erc404/MintSwap404NFT.sol";
 
 contract MintSwap404NFTRewards is OwnableUpgradeable, UUPSUpgradeable {
 
-    struct UserBenefit {
-        address account;
-        uint256 benefit;
-    }
-
-    mapping(address => uint256) public userRewardsBenefits;
-
-    mapping(uint256 => bool) public rewardsUploadTags;
+    mapping(address => uint256) public alreadyClaim;
 
     address public mintswap404NFT;
 
-    address public benefitUploader;
+    address public signer;
 
     address public rewardsAccount;
 
     uint256 public constant MIN_WITHDRAW_AMOUNT = 1000;
 
     event WithdrawRewardsBenefits(address indexed user, uint256 benefit);
-
-    event UserRewardsUploaded(address indexed user, uint256 benefit, uint256 uploadTag);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -39,39 +30,24 @@ contract MintSwap404NFTRewards is OwnableUpgradeable, UUPSUpgradeable {
         mintswap404NFT = _mintswap404NFT;
     }
 
-    function uploadUserBenefits(UserBenefit[] calldata userBenefits, uint256 uploadTag) external {
-        require(!rewardsUploadTags[uploadTag], "The rewards for this tag has already been uploaded");
-        require(msg.sender == benefitUploader, "Invalid benefitUploader");
-        require(userBenefits.length > 0, "Empty Benefits");
-
-        for (uint256 i = 0; i < userBenefits.length; ) {
-            UserBenefit calldata _userBenefit = userBenefits[i];
-            address _account = _userBenefit.account;
-            uint256 _benefit = _userBenefit.benefit;
-
-            userRewardsBenefits[_account] += _benefit;
-            emit UserRewardsUploaded(_account, _benefit, uploadTag);
-            unchecked {
-                ++i;
-            }
-        }
-        rewardsUploadTags[uploadTag] = true;
-    }
-
-    function withdrawBenefits(uint256 benefit) external {
-        require(benefit >= MIN_WITHDRAW_AMOUNT, "The withdrawal amount must be greater than 1000");
-        
+    function withdrawBenefits(
+        uint256 _amount,
+        bytes32 _r,
+        bytes32 _s,
+        uint8 _v
+    ) external {
         address sender = msg.sender;
-        uint256 userRewardsBenefit = userRewardsBenefits[sender];
-        require(benefit <= userRewardsBenefit, "Invalid withdrawal amount");
-        userRewardsBenefits[sender] = userRewardsBenefit - benefit;
-
-        IERC404(mintswap404NFT).transferFrom(rewardsAccount, sender, benefit);
-        emit WithdrawRewardsBenefits(sender, benefit);
+        require(_verfySigner(sender, _amount, _r, _s, _v) == signer, "Invalid signer");
+        uint256 canClaimAmount = _amount - alreadyClaim[sender];
+        require(canClaimAmount >= MIN_WITHDRAW_AMOUNT, "The withdrawal amount must be greater than 1000");
+        
+        IERC404(mintswap404NFT).transferFrom(rewardsAccount, sender, canClaimAmount);
+        alreadyClaim[sender] = _amount;
+        emit WithdrawRewardsBenefits(sender, canClaimAmount);
     }
 
-    function setBenefitUploader(address _benefitUploader) public onlyOwner {
-        benefitUploader = _benefitUploader;
+    function setSigner(address _signer) public onlyOwner {
+        signer = _signer;
     }
 
     function setRewardsAccount(address _rewardsAccount) public onlyOwner {
@@ -83,5 +59,50 @@ contract MintSwap404NFTRewards is OwnableUpgradeable, UUPSUpgradeable {
         onlyOwner
         override
     {}
+
+    function _verfySigner(
+        address _user,
+        uint256 _amount,
+        bytes32 _r,
+        bytes32 _s,
+        uint8 _v
+    ) internal view returns (address _signer) {
+        _signer = ecrecover(
+            keccak256(
+                abi.encodePacked(
+                    "\x19\x01",
+                    _computeDomainSeparator(),
+                    keccak256(
+                        abi.encode(
+                            keccak256(
+                                "UserRewardsBenefit(address user,uint256 amount)"
+                            ),
+                            _user,
+                            _amount
+                        )
+                    )
+                )
+            ),
+            _v,
+            _r,
+            _s
+        );
+    }
+
+    function _computeDomainSeparator() internal view returns (bytes32) {
+        return
+            keccak256(
+                abi.encode(
+                    keccak256(
+                        "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
+                    ),
+                    keccak256(bytes("MintSwap404NFTRewards")),
+                    keccak256("1"),
+                    block.chainid,
+                    address(this)
+                )
+            );
+    }
+
     
 }

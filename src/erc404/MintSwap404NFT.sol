@@ -17,6 +17,8 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
 
     uint256 public constant WL_SALE_COUNT = 500;
 
+    mapping(address => bool) public whitelist;
+
     uint256 public _publicMintedCount;
     uint256 public _wlMintedCount;
 
@@ -34,8 +36,6 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
     uint256 public constant MINTSWAP_REWARDS_COUNT = 7000;
 
     uint256 public _mintswapMintedCount;
-
-    bytes32 public markleRoot;
 
     address public metadataRenderer;
 
@@ -90,9 +90,9 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
         _setERC721TransferExempt(exemptAddress, state);
     }
 
-    function wlSale(bytes32[] calldata _proof) external payable isWLSaleTime {
+    function wlSale() external payable isWLSaleTime {
         address account = _msgSender();
-        if (!_verify(account, _proof)) revert UnauthorizedMinter(account);
+        if (!whitelist[account]) revert UnauthorizedMinter(account);
 
         require(!wlMinted[account], "This account has already WL minted");
         require(_wlMintedCount + 1 <= WL_SALE_COUNT, "WL mint exceeds limit");
@@ -148,16 +148,10 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
         emit WithdrawETH(_to, _amount);
     }
 
-    function _verify(
-        address _account,
-        bytes32[] memory _proof
-    ) internal view returns (bool) {
-        bytes32 leaf = keccak256(abi.encodePacked(_account));
-        return MerkleProof.verify(_proof, markleRoot, leaf);
-    }
-
-    function setMerkleRoot(bytes32 _root) external onlyOwner {
-        markleRoot = _root;
+    function addWhitelist(address[] calldata _addresses) external onlyOwner {
+        for (uint i = 0; i < _addresses.length; i++) {
+            whitelist[_addresses[i]] = true;
+        }
     }
 
 }
