@@ -17,6 +17,8 @@ contract MintSwap404NFTRewards is OwnableUpgradeable, UUPSUpgradeable {
 
     uint256 public constant MIN_WITHDRAW_AMOUNT = 1000;
 
+    bytes32 internal _INITIAL_DOMAIN_SEPARATOR;
+
     event WithdrawRewardsBenefits(address indexed user, uint256 benefit);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -28,6 +30,7 @@ contract MintSwap404NFTRewards is OwnableUpgradeable, UUPSUpgradeable {
         __Ownable_init(initialOwner);
         __UUPSUpgradeable_init();
         mintswap404NFT = _mintswap404NFT;
+        _INITIAL_DOMAIN_SEPARATOR = _computeDomainSeparator();
     }
 
     function withdrawBenefits(
@@ -38,9 +41,9 @@ contract MintSwap404NFTRewards is OwnableUpgradeable, UUPSUpgradeable {
     ) external {
         address sender = msg.sender;
         require(_verfySigner(sender, _amount, _r, _s, _v) == signer, "Invalid signer");
-        uint256 canClaimAmount = _amount - alreadyClaim[sender];
-        require(canClaimAmount >= MIN_WITHDRAW_AMOUNT, "The withdrawal amount must be greater than 1000");
+        require(_amount > alreadyClaim[sender], "Invalid withdraw amount");
         
+        uint256 canClaimAmount = _amount - alreadyClaim[sender];
         IERC404(mintswap404NFT).transferFrom(rewardsAccount, sender, canClaimAmount);
         alreadyClaim[sender] = _amount;
         emit WithdrawRewardsBenefits(sender, canClaimAmount);
@@ -71,7 +74,7 @@ contract MintSwap404NFTRewards is OwnableUpgradeable, UUPSUpgradeable {
             keccak256(
                 abi.encodePacked(
                     "\x19\x01",
-                    _computeDomainSeparator(),
+                    _INITIAL_DOMAIN_SEPARATOR,
                     keccak256(
                         abi.encode(
                             keccak256(
