@@ -15,8 +15,6 @@ contract MintSwap404NFTRewards is OwnableUpgradeable, UUPSUpgradeable {
 
     address public rewardsAccount;
 
-    uint256 public constant MIN_WITHDRAW_AMOUNT = 1000;
-
     bytes32 internal _INITIAL_DOMAIN_SEPARATOR;
 
     event WithdrawRewardsBenefits(address indexed user, uint256 benefit);
@@ -49,11 +47,11 @@ contract MintSwap404NFTRewards is OwnableUpgradeable, UUPSUpgradeable {
         emit WithdrawRewardsBenefits(sender, canClaimAmount);
     }
 
-    function setSigner(address _signer) public onlyOwner {
+    function setSigner(address _signer) external onlyOwner {
         signer = _signer;
     }
 
-    function setRewardsAccount(address _rewardsAccount) public onlyOwner {
+    function setRewardsAccount(address _rewardsAccount) external onlyOwner {
         rewardsAccount = _rewardsAccount;
     }
 

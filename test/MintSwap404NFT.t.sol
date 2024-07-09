@@ -11,7 +11,6 @@ contract TestMintSwap404NFT is Test {
     address constant SOME_ADDRESS = 0x21cB920Bf98041CD33A68F7543114a98e420Da0B;
     address constant OWNER_ADDRESS = 0xb84C357F5F6BB7f36632623105F10cFAD3DA18A6;
 
-
     address private proxy;
     MintSwap404NFT private instance;
 

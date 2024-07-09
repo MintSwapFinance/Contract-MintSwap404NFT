@@ -16,13 +16,6 @@ contract MintSwap404NFTStake is ReentrancyGuardUpgradeable, OwnableUpgradeable, 
 
     address public signer;
 
-    uint256 public constant MIN_WITHDRAW_AMOUNT = 0.0000001 ether;
-
-    struct UserBenefit {
-        address account;
-        uint256 benefit;
-    }
-
     bytes32 internal _INITIAL_DOMAIN_SEPARATOR;
 
     event TokensStake(address indexed owner, uint256[] tokenIds);

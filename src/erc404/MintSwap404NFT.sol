@@ -3,7 +3,6 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "./ERC404.sol";
 import "../metadata/IMetadataRenderer.sol";
 
@@ -15,12 +14,13 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
 
     uint256 public constant SALE_TOTAL_COUNT = 3000;
 
-    uint256 public constant WL_SALE_COUNT = 500;
+    uint256 public constant WL_SALE_COUNT = 800;
 
-    mapping(address => bool) public whitelist;
+    uint256 public constant MINTSWAP_REWARDS_COUNT = 7000;
 
     uint256 public _publicMintedCount;
     uint256 public _wlMintedCount;
+    uint256 public _mintswapMintedCount;
 
     struct MintConfig {
         uint32 startTime;
@@ -31,11 +31,9 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
 
     MintConfig public wlConfig;
 
+    mapping(address => bool) public whitelist;
+
     mapping(address => bool) public wlMinted;
-
-    uint256 public constant MINTSWAP_REWARDS_COUNT = 7000;
-
-    uint256 public _mintswapMintedCount;
 
     address public metadataRenderer;
 

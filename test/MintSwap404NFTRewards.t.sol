@@ -5,11 +5,12 @@ import "forge-std/Test.sol";
 import "../src/rewards/MintSwap404NFTRewards.sol";
 import "../src/erc404/MintSwap404NFT.sol";
 import {Upgrades} from "openzeppelin-foundry-upgrades/Upgrades.sol";
+
 contract TestMintSwap404NFTRewards is Test {
+
     address constant SENDER_ADDRESS = 0x54a54832f6B69D6720E3F8FEC582dCcF219006E4;
     address constant SOME_ADDRESS = 0x21cB920Bf98041CD33A68F7543114a98e420Da0B;
     address constant OWNER_ADDRESS = 0x7a12026F109fA19eB58CFDEA01965412d9B5D829;
-
 
     address private proxy;
     address private rewardsProxy;
