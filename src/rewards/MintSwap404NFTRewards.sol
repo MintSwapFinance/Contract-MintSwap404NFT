@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.26;
+pragma solidity 0.8.26;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "../erc404/MintSwap404NFT.sol";
 
 contract MintSwap404NFTRewards is OwnableUpgradeable, UUPSUpgradeable {
@@ -24,7 +25,9 @@ contract MintSwap404NFTRewards is OwnableUpgradeable, UUPSUpgradeable {
         _disableInitializers();
     }
 
-    function initialize(address initialOwner, address _mintswap404NFT) initializer public {
+    function initialize(address initialOwner, address _mintswap404NFT) initializer external {
+        require(initialOwner != address(0), "The input parameters of the address type must not be zero address.");
+        require(_mintswap404NFT != address(0), "The input parameters of the address type must not be zero address.");
         __Ownable_init(initialOwner);
         __UUPSUpgradeable_init();
         mintswap404NFT = _mintswap404NFT;
@@ -42,16 +45,18 @@ contract MintSwap404NFTRewards is OwnableUpgradeable, UUPSUpgradeable {
         require(_amount > alreadyClaim[sender], "Invalid withdraw amount");
         
         uint256 canClaimAmount = _amount - alreadyClaim[sender];
-        IERC404(mintswap404NFT).transferFrom(rewardsAccount, sender, canClaimAmount);
         alreadyClaim[sender] = _amount;
+        IERC404(mintswap404NFT).transferFrom(rewardsAccount, sender, canClaimAmount);
         emit WithdrawRewardsBenefits(sender, canClaimAmount);
     }
 
     function setSigner(address _signer) external onlyOwner {
+        require(_signer != address(0), "The input parameters of the address type must not be zero address.");
         signer = _signer;
     }
 
     function setRewardsAccount(address _rewardsAccount) external onlyOwner {
+        require(_rewardsAccount != address(0), "The input parameters of the address type must not be zero address.");
         rewardsAccount = _rewardsAccount;
     }
 
@@ -68,7 +73,7 @@ contract MintSwap404NFTRewards is OwnableUpgradeable, UUPSUpgradeable {
         bytes32 _s,
         uint8 _v
     ) internal view returns (address _signer) {
-        _signer = ecrecover(
+        _signer = ECDSA.recover(
             keccak256(
                 abi.encodePacked(
                     "\x19\x01",

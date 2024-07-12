@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.26;
+pragma solidity 0.8.26;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
@@ -55,7 +55,8 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
         string memory symbol_, 
         uint8 decimals_, 
         uint256 unitMultiplicator_
-    ) public initializer {
+    ) external initializer {
+        require(initialOwner != address(0), "The input parameters of the address type must not be zero address.");
         __Ownable_init(initialOwner);
         __UUPSUpgradeable_init();
         __ERC404_init(name_, symbol_, decimals_, unitMultiplicator_);
@@ -81,10 +82,12 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
     }
 
     function setMetadataRenderer(address _metadataRenderer) external onlyOwner {
+        require(_metadataRenderer != address(0), "The input parameters of the address type must not be zero address.");
         metadataRenderer = _metadataRenderer;
     }
 
     function setERC721TransferExempt(address exemptAddress, bool state) external onlyOwner {
+        require(exemptAddress != address(0), "The input parameters of the address type must not be zero address.");
         _setERC721TransferExempt(exemptAddress, state);
     }
 
@@ -97,26 +100,26 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
         require(_publicMintedCount + 1 <= SALE_TOTAL_COUNT, "Mint exceeds limit");
         require(WHITELIST_SALE_PRICE <= msg.value, "Not Enough ETH value to WL mint tokens");
 
-        _mintERC20(account, units);
         wlMinted[account] = true;
         _publicMintedCount++;
         _wlMintedCount++;
+        _mintERC20(account, units);
     }
 
     function publicSale(uint numberOfTokens) external payable isPublicSaleTime {
         require(numberOfTokens > 0 && _publicMintedCount + numberOfTokens <= SALE_TOTAL_COUNT, "Mint numberOfTokens exceeds limit");
         require(PUBLIC_SALE_PRICE * numberOfTokens <= msg.value, "Not Enough ETH value to mint tokens");
         
-        _mintERC20(_msgSender(), numberOfTokens * units);
         _publicMintedCount += numberOfTokens;
+        _mintERC20(_msgSender(), numberOfTokens * units);
     }
 
     function mintRewards(address exemptAddress, uint256 amount) external onlyOwner {
         require(erc721TransferExempt(exemptAddress), "The address is not erc721TransferExempt");
         require(amount > 0 && _mintswapMintedCount + amount <= MINTSWAP_REWARDS_COUNT, "The maximum mint rewards quantity cannot exceed 7000");
         
-        _mintERC20(exemptAddress, amount * units);
         _mintswapMintedCount += amount;
+        _mintERC20(exemptAddress, amount * units);
     }
 
     function setMintConfig(
@@ -142,6 +145,7 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
     {}
 
     function withdrawETH(address _to, uint256 _amount) external onlyOwner {
+        require(_to != address(0), "The input parameters of the address type must not be zero address.");
         (bool success, ) = _to.call{value: _amount}(new bytes(0));
         require(success, 'ETH transfer failed');
         emit WithdrawETH(_to, _amount);

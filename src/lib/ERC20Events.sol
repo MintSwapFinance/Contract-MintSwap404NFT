@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.26;
+pragma solidity 0.8.26;
 
 library ERC20Events {
   event Approval(address indexed owner, address indexed spender, uint256 value);

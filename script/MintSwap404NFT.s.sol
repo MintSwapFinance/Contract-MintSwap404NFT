@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.26;
 
 import "forge-std/console.sol";
 import "forge-std/Script.sol";
@@ -20,6 +20,13 @@ contract MintSwap404NFTUUPS is Script {
         );
 
         console.log("uupsProxy deploy at %s", uupsProxy);
+
+        // contract upgrade
+        // Upgrades.upgradeProxy(
+        //     0x57aA394Cd408c1dB3E0De979e649e82BF8dD395F,
+        //     "MintSwap404NFT.sol",
+        //     ""
+        // );
 
         vm.stopBroadcast();
     }

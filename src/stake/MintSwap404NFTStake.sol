@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.26;
+pragma solidity 0.8.26;
 
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "../erc404/MintSwap404NFT.sol";
 
 contract MintSwap404NFTStake is ReentrancyGuardUpgradeable, OwnableUpgradeable, UUPSUpgradeable {
@@ -29,7 +30,9 @@ contract MintSwap404NFTStake is ReentrancyGuardUpgradeable, OwnableUpgradeable, 
         _disableInitializers();
     }
 
-    function initialize(address initialOwner, address _mintswap404NFT) initializer public {
+    function initialize(address initialOwner, address _mintswap404NFT) initializer external {
+        require(initialOwner != address(0), "The input parameters of the address type must not be zero address.");
+        require(_mintswap404NFT != address(0), "The input parameters of the address type must not be zero address.");
         __Ownable_init(initialOwner);
         __ReentrancyGuard_init();
         __UUPSUpgradeable_init();
@@ -43,8 +46,8 @@ contract MintSwap404NFTStake is ReentrancyGuardUpgradeable, OwnableUpgradeable, 
 
         for (uint256 i = 0; i < tokenIds.length; ) {
             require(IERC404(mintswap404NFT).ownerOf(tokenIds[i]) == sender, "Invalid tokenId");
-            IERC404(mintswap404NFT).transferFrom(sender, address(this), tokenIds[i]);
             stakedTokens[tokenIds[i]] = sender;
+            IERC404(mintswap404NFT).transferFrom(sender, address(this), tokenIds[i]);
             unchecked {
                 ++i;
             }
@@ -60,8 +63,8 @@ contract MintSwap404NFTStake is ReentrancyGuardUpgradeable, OwnableUpgradeable, 
         for (uint256 i = 0; i < tokenIds.length; ) {
             address nftOwner = stakedTokens[tokenIds[i]];
             require(sender == nftOwner, "Invalid tokenId");
-            IERC404(mintswap404NFT).transferFrom(address(this), sender, tokenIds[i]);
             delete stakedTokens[tokenIds[i]];
+            IERC404(mintswap404NFT).transferFrom(address(this), sender, tokenIds[i]);
             unchecked {
                 ++i;
             }
@@ -81,14 +84,15 @@ contract MintSwap404NFTStake is ReentrancyGuardUpgradeable, OwnableUpgradeable, 
         require(_amount > alreadyClaim[sender], "Invalid withdraw amount");
         
         uint256 canClaimAmount = _amount - alreadyClaim[sender];
+        alreadyClaim[sender] = _amount;
         (bool success, ) = sender.call{value: canClaimAmount}(new bytes(0));
         require(success, 'ETH transfer failed');
 
-        alreadyClaim[sender] = _amount;
         emit WithdrawStakeBenefits(sender, canClaimAmount);
     }
 
-    function setSigner(address _signer) public onlyOwner {
+    function setSigner(address _signer) external onlyOwner {
+        require(_signer != address(0), "The input parameters of the address type must not be zero address.");
         signer = _signer;
     }
 
@@ -105,7 +109,7 @@ contract MintSwap404NFTStake is ReentrancyGuardUpgradeable, OwnableUpgradeable, 
         bytes32 _s,
         uint8 _v
     ) internal view returns (address _signer) {
-        _signer = ecrecover(
+        _signer = ECDSA.recover(
             keccak256(
                 abi.encodePacked(
                     "\x19\x01",
