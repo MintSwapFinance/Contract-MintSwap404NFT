@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
@@ -94,6 +94,7 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
 
         require(!wlMinted[account], "This account has already WL minted");
         require(_wlMintedCount + 1 <= WL_SALE_COUNT, "WL mint exceeds limit");
+        require(_publicMintedCount + 1 <= SALE_TOTAL_COUNT, "Mint exceeds limit");
         require(WHITELIST_SALE_PRICE <= msg.value, "Not Enough ETH value to WL mint tokens");
 
         _mintERC20(account, units);
