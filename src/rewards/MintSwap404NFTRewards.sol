@@ -26,7 +26,6 @@ contract MintSwap404NFTRewards is OwnableUpgradeable, UUPSUpgradeable {
     }
 
     function initialize(address initialOwner, address _mintswap404NFT) initializer external {
-        require(initialOwner != address(0), "The input parameters of the address type must not be zero address.");
         require(_mintswap404NFT != address(0), "The input parameters of the address type must not be zero address.");
         __Ownable_init(initialOwner);
         __UUPSUpgradeable_init();
