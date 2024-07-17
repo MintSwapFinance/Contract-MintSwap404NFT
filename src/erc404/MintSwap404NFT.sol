@@ -14,7 +14,7 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
 
     uint256 public constant SALE_TOTAL_COUNT = 3000;
 
-    uint256 public constant WL_SALE_COUNT = 800;
+    uint256 public constant WL_SALE_COUNT = 500;
 
     uint256 public constant MINTSWAP_REWARDS_COUNT = 7000;
 
@@ -34,6 +34,8 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
     mapping(address => bool) public whitelist;
 
     mapping(address => bool) public wlMinted;
+
+    mapping(address => uint256) public userMintedCount;
 
     address public metadataRenderer;
 
@@ -62,14 +64,20 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
     }
 
     modifier isPublicSaleTime() {
-        if (block.timestamp < mintConfig.startTime) revert MintNotStart();
-        if (block.timestamp > mintConfig.endTime) revert MintFinished();
-        _;
+        if (block.timestamp < wlConfig.endTime && _wlMintedCount == WL_SALE_COUNT) {
+            _;
+        } else {
+            if (block.timestamp < mintConfig.startTime) revert MintNotStart();
+            if (block.timestamp > mintConfig.endTime) revert MintFinished();
+            _;
+        }
+
     }
 
     modifier isWLSaleTime() {
         if (block.timestamp < wlConfig.startTime) revert MintNotStart();
         if (block.timestamp > wlConfig.endTime) revert MintFinished();
+        if (_wlMintedCount == WL_SALE_COUNT) revert MintFinished();
         _;
     }
 
@@ -107,9 +115,11 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
 
     function publicSale(uint numberOfTokens) external payable isPublicSaleTime {
         require(numberOfTokens > 0 && _publicMintedCount + numberOfTokens <= SALE_TOTAL_COUNT, "Mint numberOfTokens exceeds limit");
+        require(userMintedCount[_msgSender()] + numberOfTokens <= 3, "Mint numberOfTokens exceeds maximum limit");
         require(PUBLIC_SALE_PRICE * numberOfTokens <= msg.value, "Not Enough ETH value to mint tokens");
         
         _publicMintedCount += numberOfTokens;
+        userMintedCount[_msgSender()] += numberOfTokens;
         _mintERC20(_msgSender(), numberOfTokens * units);
     }
 
