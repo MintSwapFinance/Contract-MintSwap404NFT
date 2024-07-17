@@ -64,14 +64,9 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
     }
 
     modifier isPublicSaleTime() {
-        if (block.timestamp < wlConfig.endTime && _wlMintedCount == WL_SALE_COUNT) {
-            _;
-        } else {
-            if (block.timestamp < mintConfig.startTime) revert MintNotStart();
-            if (block.timestamp > mintConfig.endTime) revert MintFinished();
-            _;
-        }
-
+        if (block.timestamp > mintConfig.endTime) revert MintFinished();
+        if (block.timestamp < mintConfig.startTime && _wlMintedCount < WL_SALE_COUNT) revert MintNotStart();
+        _;
     }
 
     modifier isWLSaleTime() {
