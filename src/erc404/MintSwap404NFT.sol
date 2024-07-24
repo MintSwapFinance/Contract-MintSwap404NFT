@@ -3,8 +3,8 @@ pragma solidity 0.8.26;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 import "./ERC404.sol";
-import "../metadata/IMetadataRenderer.sol";
 
 contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
 
@@ -17,6 +17,8 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
     uint256 public constant WL_SALE_COUNT = 500;
 
     uint256 public constant MINTSWAP_REWARDS_COUNT = 7000;
+
+    string public baseUri;
 
     uint256 public _publicMintedCount;
     uint256 public _wlMintedCount;
@@ -36,8 +38,6 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
     mapping(address => bool) public wlMinted;
 
     mapping(address => uint256) public userMintedCount;
-
-    address public metadataRenderer;
 
     error MintNotStart();
     error MintFinished();
@@ -80,12 +80,12 @@ contract MintSwap404NFT is ERC404, OwnableUpgradeable, UUPSUpgradeable {
         uint256 tokenId
     ) public view override returns (string memory) {
         require(ownerOf(tokenId) != address(0), "Invalid tokenId");
-        return IMetadataRenderer(metadataRenderer).tokenURI(tokenId);
+        return string.concat(baseUri,Strings.toString(tokenId - ID_ENCODING_PREFIX));
     }
 
-    function setMetadataRenderer(address _metadataRenderer) external onlyOwner {
-        require(_metadataRenderer != address(0), "The input parameters of the address type must not be zero address.");
-        metadataRenderer = _metadataRenderer;
+    function setBaseUri(string memory _baseUri) external onlyOwner {
+        require(bytes(_baseUri).length > 0, "_baseUri Can not be empty");
+        baseUri = _baseUri;
     }
 
     function setERC721TransferExempt(address exemptAddress, bool state) external onlyOwner {

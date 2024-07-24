@@ -35,11 +35,15 @@ contract TestMintSwap404NFT is Test {
         // =========================publicSale=============================
         console.log("testMint");
         vm.prank(OWNER_ADDRESS);
+
+        instance.setBaseUri("ipfs://QmV5DqXz8ZuDohYpoX8iYaVMZKSUsExc79TVKmHhn3fNXE/");
+        string memory tokenUri = instance.tokenURI(340282366920938463463374607431768211457);
+        console.log("tokenUri -> ", tokenUri);
+
         vm.warp(1719468517);
         uint32 _start = 1619457722;
         uint32 _end = 1821457722;
         instance.setMintConfig(_start,_end);
-
 
         vm.startPrank(0xEe73e1787Fb72E480566DB04db04F1955e723b82);
         vm.deal(0xEe73e1787Fb72E480566DB04db04F1955e723b82, 10 ether);
